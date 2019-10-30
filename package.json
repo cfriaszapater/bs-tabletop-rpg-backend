@@ -1,0 +1,24 @@
+{
+  "name": "bs-tabletop-rpg-backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "devstart": "MONGODB_URI=`cat .dev-mongodb-uri` nodemon ./bin/www",
+    "debug": "node --inspect-brk ./bin/www",
+    "test": "jest",
+    "lint": "eslint \"./**/*.js\" --fix"
+  },
+  "dependencies": {
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "pug": "^2.0.4"
+  },
+  "devDependencies": {
+    "eslint": "^6.6.0",
+    "jest": "^24.9.0",
+    "nodemon": "^1.19.4"
+  }
+}
