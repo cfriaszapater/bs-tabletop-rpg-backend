@@ -1,10 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var debug = require("debug")("bs-tabletop-rpg-backend:routers:combats");
-const {
-  createCombat,
-  declareAttack: declareAttackInTurn
-} = require("../service/combat");
+const { createCombat, declareAttack } = require("../service/combat");
 
 router.get("/", postCombat);
 router.get("/:combatId", getCombat);
@@ -48,7 +45,7 @@ const postAttackStamina = async function(req, res, next) {
   }
 
   try {
-    var turn = await declareAttackInTurn(
+    var turn = await declareAttack(
       combatId,
       attackNumber,
       attackStamina,
