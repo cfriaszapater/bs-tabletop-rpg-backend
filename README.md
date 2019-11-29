@@ -38,6 +38,12 @@ In dev (debug log and monitor file changes):
 DEBUG=bs-tabletop-rpg-backend:* npm run devstart | bunyan
 ```
 
+Or:
+
+```sh
+npm start
+```
+
 ### Deploy to production
 
 This is what I used to deploy to production (having an heroku account and git heroku remote set to point to it):
