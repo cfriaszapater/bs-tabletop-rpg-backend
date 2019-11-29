@@ -88,4 +88,5 @@ Feature: Combat
     And response body path $.turn should not be .*currentDecision.*
     And I store the value of body path $.turn.defender.characteristics.health.current as defenderHealth in scenario scope
     And I store the value of body path $.turn.attackResult.damage as damage1 in scenario scope
+    # XXX possible alternative: And value of scenario variable defenderHealth should be `previousDefenderHealth` - `damage1`
     And `defenderHealth` is `previousDefenderHealth` minus `damage1`
