@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 var debug = require("debug")("bs-tabletop-rpg-backend:routers:combats");
 const { createCombat, declareAttack } = require("../service/combat");
+var createError = require("http-errors");
 
 router.get("/", postCombat);
 router.get("/:combatId", getCombat);
@@ -21,9 +22,7 @@ async function getCombat(req, res, next) {
 async function postCombat(req, res, next) {
   debug("postCombat", req.body);
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
-    res.statusMessage = "body must not be empty";
-    res.status(400).end();
-    return next();
+    return next(createError(400, "Body must not be empty"));
   }
 
   try {
@@ -39,9 +38,7 @@ async function postAttackStamina(req, res, next) {
   const attackStamina = req.body;
   debug("postAttack", combatId, attackStamina);
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
-    res.statusMessage = "body must not be empty";
-    res.status(400).end();
-    return next();
+    return next(createError(400, "Body must not be empty"));
   }
 
   try {
