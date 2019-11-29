@@ -12,13 +12,13 @@ router.post(
 
 module.exports = router;
 
-const getCombat = async function(req, res, next) {
+async function getCombat(req, res, next) {
   debug("get combat", req.params.combatId);
 
   return "TODO combat";
-};
+}
 
-const postCombat = async function(req, res, next) {
+async function postCombat(req, res, next) {
   debug("postCombat", req.body);
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
     res.statusMessage = "body must not be empty";
@@ -32,9 +32,9 @@ const postCombat = async function(req, res, next) {
   } catch (err) {
     next(err);
   }
-};
+}
 
-const postAttackStamina = async function(req, res, next) {
+async function postAttackStamina(req, res, next) {
   const { combatId, attackNumber } = req.params;
   const attackStamina = req.body;
   debug("postAttack", combatId, attackStamina);
@@ -56,4 +56,4 @@ const postAttackStamina = async function(req, res, next) {
     next(err);
   }
   return "TODO return updated turn";
-};
+}

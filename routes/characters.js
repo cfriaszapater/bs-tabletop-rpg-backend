@@ -7,12 +7,12 @@ router.get("/:characterId", getCharacter);
 
 module.exports = router;
 
-const getCharacter = async (req, res, next) => {
+async function getCharacter(req, res, next) {
   debug("get character", req.params.characterId);
 
   return "TODO character";
-};
+}
 
-const listCharacters = async req => {
+async function listCharacters(req) {
   return "TODO list characters";
-};
+}
