@@ -26,11 +26,9 @@ Feature: Combat
     And I POST to /characters
     And I store the value of body path $.id as C1 in scenario scope
     And I pipe contents of file ./features/json/character-c2_post.json to body
-    And I set Content-Type header to application/json
     And I POST to /characters
     And I store the value of body path $.id as C2 in scenario scope
     And I set body to {"participants":["`C1`", "`C2`"]}
-    And I set Content-Type header to application/json
     And I POST to /combats
     And I store the value of body path $.id as combat1 in scenario scope
     And I store the value of body path $.id.turn.id as turn1 in scenario scope
