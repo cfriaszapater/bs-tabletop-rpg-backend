@@ -4,15 +4,15 @@ const {
   listCombatsByUser,
   getCombatById
 } = require("../repository/combatRepository");
+const { startCombat } = require("../domain/combat");
 
 exports.createCombat = async (combat, userId) => {
-  const id = uuidv4();
-  combat = {
+  const startedCombat = await startCombat({
     ...combat,
     user: userId,
-    id: id
-  };
-  return await saveCombat(combat);
+    id: uuidv4()
+  });
+  return await saveCombat(startedCombat);
 };
 
 exports.listCombatsByUser = async userId => {

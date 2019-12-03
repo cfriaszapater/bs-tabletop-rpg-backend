@@ -5,7 +5,7 @@ const {
   createCombat,
   declareAttack,
   listCombatsByUser
-} = require("../service/combat");
+} = require("../service/combatService");
 var createError = require("http-errors");
 
 router.post("/", postCombat);
