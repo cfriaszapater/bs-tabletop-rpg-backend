@@ -1,21 +1,22 @@
-const debug = require("debug")("bs-tabletop-rpg-backend:domain:character");
+const debug = require("debug")("bs-tabletop-rpg-backend:service:character");
 const uuidv4 = require("uuid/v4");
+const {
+  saveCharacter,
+  getCharacterById,
+  listCharactersByUser
+} = require("../repository/characterRepository");
 
-const charactersById = new Map();
-
-exports.createCharacter = async function createCharacter(character, userId) {
+exports.createCharacter = async (character, userId) => {
   const id = uuidv4();
   debug("id: " + id);
   character.id = id;
-  charactersById.set(id, character);
-  debug("saved character: " + JSON.stringify(character));
-  return character;
+  return await saveCharacter(character);
 };
 
-exports.getCharacterById = async function getCharacterById(id, userId) {
-  return charactersById.get(id);
+exports.getCharacterById = async (id, userId) => {
+  return getCharacterById(id);
 };
 
-exports.listCharactersByUser = async function listCharactersByUser(userId) {
-  return [...charactersById.values()];
+exports.listCharactersByUser = async userId => {
+  return listCharactersByUser(userId);
 };

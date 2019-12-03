@@ -1,15 +1,22 @@
-const debug = require("debug")("bs-tabletop-rpg-backend:domain:combat");
-const Combat = require("../db/combat");
+const uuidv4 = require("uuid/v4");
+const {
+  saveCombat,
+  listCombatsByUser,
+  getCombatById
+} = require("../repository/combatRepository");
 
-exports.createCombat = async function createCombat(combat, userId) {
-  combat = new Combat({
+exports.createCombat = async (combat, userId) => {
+  const id = uuidv4();
+  combat = {
     ...combat,
-    user: userId
-  });
-  debug("combat to save: " + combat);
-  combat = await combat.save();
-  debug("saved combat: " + combat);
-  return combat;
+    user: userId,
+    id: id
+  };
+  return await saveCombat(combat);
+};
+
+exports.listCombatsByUser = async userId => {
+  return listCombatsByUser(userId);
 };
 
 exports.declareAttack = async function declareAttack(
