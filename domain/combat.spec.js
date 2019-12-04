@@ -1,7 +1,9 @@
 const { startCombat, notEnoughParticipantsError } = require("./combat");
+const random = require("../util/random");
+jest.mock("../util/random");
 
 describe("Combat", () => {
-  it("given combat with participants, when start combat, then set turn.attacker as highest Ini character", () => {
+  it("should turn.attacker be highest Ini", () => {
     const character1 = character("C1", 6);
     const character2 = character("C2", 5);
     const combat = { participants: [character1, character2] };
@@ -11,7 +13,49 @@ describe("Combat", () => {
     expect(startedCombat.turn.attacker).toEqual(character1);
   });
 
-  it("given no participants, when start combat, then error", () => {
+  it("should turn.attacker be highest reach on equal Ini", () => {
+    const character1 = character("C1", 6, 1);
+    const character2 = character("C2", 6, 2);
+    const combat = { participants: [character1, character2] };
+
+    const startedCombat = startCombat(combat);
+
+    expect(startedCombat.turn.attacker).toEqual(character2);
+  });
+
+  it("should turn.attacker be highest Agi on equal Ini, reach", () => {
+    const character1 = character("C1", 6, 1, 2);
+    const character2 = character("C2", 6, 1, 3);
+    const combat = { participants: [character1, character2] };
+
+    const startedCombat = startCombat(combat);
+
+    expect(startedCombat.turn.attacker).toEqual(character2);
+  });
+
+  it("should turn.attacker be highest Int on equal Ini, reach, Agi", () => {
+    const character1 = character("C1", 6, 1, 2, 3);
+    const character2 = character("C2", 6, 1, 2, 2);
+    const combat = { participants: [character1, character2] };
+
+    const startedCombat = startCombat(combat);
+
+    expect(startedCombat.turn.attacker).toEqual(character1);
+  });
+
+  it("should turn.attacker be random on equal Ini, reach, Agi, Int", () => {
+    random.getRandomInt.mockReturnValue(1);
+
+    const character1 = character("C1", 6, 1, 2, 2);
+    const character2 = character("C2", 6, 1, 2, 2);
+    const combat = { participants: [character1, character2] };
+
+    const startedCombat = startCombat(combat);
+
+    expect(startedCombat.turn.attacker).toEqual(character2);
+  });
+
+  it("should error on no participants", () => {
     expect(() => {
       startCombat({});
     }).toThrow("2 participant");
