@@ -1,11 +1,12 @@
 var express = require("express");
 var router = express.Router();
 var debug = require("debug")("bs-tabletop-rpg-backend:routers:combats");
+const combatRepository = require("../repository/combatRepository");
 const {
   createCombat,
   declareAttack,
   listCombatsByUser
-} = require("../service/combatService");
+} = require("../service/combatService")(combatRepository);
 var createError = require("http-errors");
 
 router.post("/", postCombat);

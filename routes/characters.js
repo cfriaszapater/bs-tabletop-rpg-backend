@@ -1,11 +1,12 @@
 var express = require("express");
 var router = express.Router();
 var debug = require("debug")("bs-tabletop-rpg-backend:routers:characters");
+const characterRepository = require("../repository/characterRepository");
 const {
   createCharacter,
   getCharacterById,
   listCharactersByUser
-} = require("../service/characterService");
+} = require("../service/characterService")(characterRepository);
 var createError = require("http-errors");
 
 router.get("/", listCharacters);
