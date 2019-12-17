@@ -1,4 +1,9 @@
-const { startCombat, notEnoughParticipantsError } = require("./combat");
+const {
+  startCombat,
+  selectOpponent,
+  notEnoughParticipantsError,
+  selectOpponentNoDefenderError
+} = require("./combat");
 const random = require("../util/random");
 jest.mock("../util/random");
 
@@ -74,7 +79,7 @@ describe("Combat", () => {
   });
 });
 
-it("should set turn step and publish events on combat start", () => {
+it("should start combat", () => {
   const actingCharacterId = "C1";
   const combat = {
     participants: [character(actingCharacterId, 6), character("C2", 5)]
@@ -83,6 +88,7 @@ it("should set turn step and publish events on combat start", () => {
   const startedCombat = startCombat(combat);
 
   expect(startedCombat.turn.step).toEqual("SelectOpponent");
+  expect(startedCombat.turn.number).toBe(1);
   expect(startedCombat.events.length).toBe(2);
   expect(startedCombat.events[0]).toEqual({ event: "CombatStarted" });
   expect(startedCombat.events[1]).toEqual({
@@ -100,6 +106,34 @@ it("should set charactersToAct on turn start", () => {
 
   expect(startedCombat.charactersToAct.length).toBe(1);
   expect(startedCombat.charactersToAct[0]).toEqual("C2");
+});
+
+it("should select opponent", () => {
+  const combat = startCombat({
+    participants: [character("C1", 6), character("C2", 5)]
+  });
+
+  const patchedCombat = selectOpponent(combat, { defender: "C2" });
+
+  expect(patchedCombat.turn.defender.id).toBe("C2");
+  expect(patchedCombat.turn.step).toBe("DecideStaminaLowerIni");
+  expect(patchedCombat.turn.currentDecision).toBe("defender");
+  expect(patchedCombat.events.length).toBe(combat.events.length + 1);
+  expect(patchedCombat.events[patchedCombat.events.length - 1]).toEqual({
+    event: "OpponentSelected",
+    data: "C2"
+  });
+});
+
+it("should error on select opponent without defender", () => {
+  const actingCharacterId = "C1";
+  const combat = startCombat({
+    participants: [character(actingCharacterId, 6), character("C2", 5)]
+  });
+
+  expect(() => {
+    selectOpponent(combat, { jarl: "C2" });
+  }).toThrow(selectOpponentNoDefenderError);
 });
 
 // Character with only the attributes needed to decide who acts first in initiative turn

@@ -6,27 +6,27 @@ const characterRepository = require("../repository/characterRepository");
 const {
   createCombat,
   declareAttack,
-  listCombatsByUser
+  listCombatsByUser,
+  turnAction
 } = require("../service/combatService")(combatRepository, characterRepository);
-var createError = require("http-errors");
+const { validateNotEmpty } = require("./validateNotEmpty");
 
 router.post("/", postCombat);
 router.get("/", listCombats);
+router.get("/:combatId", getCombat);
+router.patch("/:combatId/turns/:turnId", patchTurn);
 router.post(
   "/:combatId/turn/attacks/:attackNumber/attackerStamina",
   postAttackStamina
 );
-router.get("/:combatId", getCombat);
 
 module.exports = router;
 
 async function postCombat(req, res, next) {
   debug("postCombat", req.body);
-  if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
-    return next(createError(400, "Body must not be empty"));
-  }
 
   try {
+    validateNotEmpty(req.body);
     var combat = await createCombat(req.body /*, req.user.sub*/);
     res.status(201).json(combat);
   } catch (err) {
@@ -49,15 +49,28 @@ async function getCombat(req, res, next) {
   return "TODO combat";
 }
 
+async function patchTurn(req, res, next) {
+  const { combatId, turnId } = req.params;
+  const turnPatch = req.body;
+  debug("patchTurn", combatId, turnId, turnPatch);
+
+  try {
+    validateNotEmpty(turnPatch);
+    var turn = await turnAction(combatId, turnId, turnPatch /*, req.user.sub*/);
+    res.status(200).json(turn);
+  } catch (err) {
+    next(err);
+  }
+  return "TODO return updated turn";
+}
+
 async function postAttackStamina(req, res, next) {
   const { combatId, attackNumber } = req.params;
   const attackStamina = req.body;
   debug("postAttack", combatId, attackStamina);
-  if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
-    return next(createError(400, "Body must not be empty"));
-  }
 
   try {
+    validateNotEmpty(attackStamina);
     var turn = await declareAttack(
       combatId,
       attackNumber,

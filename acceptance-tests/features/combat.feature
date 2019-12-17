@@ -11,12 +11,14 @@ Feature: Combat
     And I store the value of body path $.id as C2 in scenario scope
     And I set body to {"participants":["`C1`", "`C2`"]}
     When I POST to /combats
-    Then response body should be valid json
+    Then response code should be 201
+    And response body should be valid json
     And response body path $.id should be (.+)
     And response body path $.turn.attacker.id should be `C2`
     And response body path $.charactersToAct should be of type array with length 1
     And response body path $.charactersToAct[0] should be `C1`
     And response body path $.turn.step should be SelectOpponent
+    And response body path $.turn.number should be 1
     And response body path $.events should be of type array with length 2
     And response body path $.events[0].event should be CombatStarted
     And response body path $.events[1].event should be TurnStarted
@@ -33,14 +35,15 @@ Feature: Combat
     And I set body to {"participants":["`C1`", "`C2`"]}
     And I POST to /combats
     And I store the value of body path $.id as combat1 in scenario scope
-    And I store the value of body path $.id.turn.id as turn1 in scenario scope
+    And I store the value of body path $.turn.number as turn1 in scenario scope
     And I store the value of body path $.events.length as eventIndex in scenario scope
     And I set body to {"defender": "`C1`"}
     When I PATCH /combats/`combat1`/turns/`turn1`
-    Then response body path $.turn.defender.id should be `C1`
+    Then response code should be 200
+    And response body path $.turn.defender.id should be `C1`
     And response body path $.turn.step should be DecideStaminaLowerIni
     And response body path $.turn.currentDecision should be defender
-    And response body path $.event[`eventIndex`] should be {(.*)"event": "OpponentSelected", "opponent": "`C1`"(.*)}
+    And response body path $.event[`eventIndex`] should be {(.*)"event": "OpponentSelected", "data": "`C1`"(.*)}
 
   Scenario: lower Ini defender C1 declares defense, attack not resolved
     Given I pipe contents of file ./features/json/character-c1_post.json to body

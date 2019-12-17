@@ -1,19 +1,33 @@
 const uuidv4 = require("uuid/v4");
-const { startCombat } = require("../domain/combat");
+const { startCombat, selectOpponent } = require("../domain/combat");
 
 module.exports = (combatRepository, characterRepository) => ({
   createCombat: async (combat, userId) => {
-    combat = await loadParticipants(combat, characterRepository);
+    const combatWithParticipants = await loadParticipants(
+      combat,
+      characterRepository
+    );
     const startedCombat = await startCombat({
-      ...combat,
+      ...combatWithParticipants,
       user: userId,
       id: uuidv4()
     });
-    return await combatRepository.saveCombat(startedCombat);
+    return await combatRepository.save(startedCombat);
+  },
+
+  turnAction: async (combatId, turnId, turnPatch, userId) => {
+    const combat = await combatRepository.findById(combatId);
+    if (combat.turn.id !== turnId) {
+      throw "Turn " + turnId + " is not the current turn";
+    }
+    if (combat.turn.step === "SelectOpponent") {
+      const patchedCombat = selectOpponent(combat, turnPatch, userId);
+      return await combatRepository.save(patchedCombat);
+    }
   },
 
   listCombatsByUser: async userId => {
-    return combatRepository.listCombatsByUser(userId);
+    return combatRepository.listByUser(userId);
   },
 
   declareAttack: async (combatId, attackNumber, attackStamina, userId) => {

@@ -15,19 +15,19 @@ function startCombat(combat) {
       data: attacker.id
     }
   ];
-  const startedCombat = {
+
+  return {
     ...combat,
     turn: {
       attacker: attacker,
-      step: "SelectOpponent"
+      step: "SelectOpponent",
+      number: 1
     },
     charactersToAct: combat.participants
       .filter(character => character.id !== attacker.id)
       .map(character => character.id),
     events: startCombatEvents
   };
-
-  return startedCombat;
 }
 
 const notEnoughParticipantsError =
@@ -79,7 +79,42 @@ function actingOrder(c1, c2) {
   }
 }
 
+const selectOpponentNoDefenderError = "defender expected on SelectOpponent";
+
+function selectOpponent(combat, turnPatch, userId) {
+  // if (combat.turn.attacker.user !== userId) {
+  //   throw "User " +
+  //     userId +
+  //     " not allowed to select opponent at this turn step " +
+  //     combat.turn.step;
+  // }
+  const defenderId = turnPatch.defender;
+  if (defenderId === undefined) {
+    throw selectOpponentNoDefenderError;
+  }
+
+  const defender = combat.participants.find(
+    character => character.id === defenderId
+  );
+
+  const selectOpponentEvents = [
+    { event: "OpponentSelected", data: defenderId }
+  ];
+
+  return {
+    ...combat,
+    turn: {
+      defender: defender,
+      step: "DecideStaminaLowerIni",
+      currentDecision: "defender"
+    },
+    events: combat.events.concat(selectOpponentEvents)
+  };
+}
+
 module.exports = {
   startCombat,
-  notEnoughParticipantsError
+  notEnoughParticipantsError,
+  selectOpponent,
+  selectOpponentNoDefenderError
 };
