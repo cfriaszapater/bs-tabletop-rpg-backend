@@ -21,9 +21,10 @@ function startCombat(combat) {
       attacker: attacker,
       step: "SelectOpponent"
     },
-    events: combat.events
-      ? combat.events.push(startCombatEvents)
-      : startCombatEvents
+    charactersToAct: combat.participants
+      .filter(character => character.id !== attacker.id)
+      .map(character => character.id),
+    events: startCombatEvents
   };
 
   return startedCombat;

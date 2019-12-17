@@ -1,8 +1,9 @@
 const uuidv4 = require("uuid/v4");
 const { startCombat } = require("../domain/combat");
 
-module.exports = combatRepository => ({
+module.exports = (combatRepository, characterRepository) => ({
   createCombat: async (combat, userId) => {
+    combat = await loadParticipants(combat, characterRepository);
     const startedCombat = await startCombat({
       ...combat,
       user: userId,
@@ -45,3 +46,14 @@ module.exports = combatRepository => ({
     //   .exec();
   }
 });
+
+async function loadParticipants(combat, characterRepository) {
+  return {
+    ...combat,
+    participants: await Promise.all(
+      combat.participants.map(character =>
+        characterRepository.findById(character)
+      )
+    )
+  };
+}

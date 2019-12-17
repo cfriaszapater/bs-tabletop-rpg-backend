@@ -1,14 +1,14 @@
 const charactersById = new Map();
 
-exports.saveCharacter = async character => {
+exports.save = async character => {
   charactersById.set(character.id, character);
-  return character;
+  return Promise.resolve(character);
 };
 
-exports.getCharacterById = async id => {
-  return charactersById.get(id);
+exports.findById = async id => {
+  return Promise.resolve(charactersById.get(id));
 };
 
-exports.listCharactersByUser = async userId => {
-  return [...charactersById.values()];
+exports.listByUser = async userId => {
+  return Promise.resolve([...charactersById.values()]);
 };

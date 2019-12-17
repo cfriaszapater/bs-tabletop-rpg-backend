@@ -6,14 +6,14 @@ module.exports = characterRepository => ({
     const id = uuidv4();
     debug("id: " + id);
     character.id = id;
-    return await characterRepository.saveCharacter(character);
+    return await characterRepository.save(character);
   },
 
   getCharacterById: async (id, userId) => {
-    return characterRepository.getCharacterById(id);
+    return characterRepository.findById(id);
   },
 
   listCharactersByUser: async userId => {
-    return characterRepository.listCharactersByUser(userId);
+    return characterRepository.listByUser(userId);
   }
 });

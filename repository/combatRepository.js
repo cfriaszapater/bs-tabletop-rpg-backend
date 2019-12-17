@@ -2,13 +2,13 @@ const combatsById = new Map();
 
 exports.saveCombat = async combat => {
   combatsById.set(combat.id, combat);
-  return combat;
+  return Promise.resolve(combat);
 };
 
 exports.getCombatById = async id => {
-  return combatsById.get(id);
+  return Promise.resolve(combatsById.get(id));
 };
 
 exports.listCombatsByUser = async userId => {
-  return [...combatsById.values()];
+  return Promise.resolve([...combatsById.values()]);
 };

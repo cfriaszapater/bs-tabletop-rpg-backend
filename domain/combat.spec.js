@@ -91,6 +91,17 @@ it("should set turn step and publish events on combat start", () => {
   });
 });
 
+it("should set charactersToAct on turn start", () => {
+  const combat = {
+    participants: [character("C1", 6), character("C2", 5)]
+  };
+
+  const startedCombat = startCombat(combat);
+
+  expect(startedCombat.charactersToAct.length).toBe(1);
+  expect(startedCombat.charactersToAct[0]).toEqual("C2");
+});
+
 // Character with only the attributes needed to decide who acts first in initiative turn
 function character(id, ini, reach, agi, int) {
   return {

@@ -14,11 +14,13 @@ Feature: Combat
     Then response body should be valid json
     And response body path $.id should be (.+)
     And response body path $.turn.attacker.id should be `C2`
-    And response body path $.charactersToAct should be [`C1`]
+    And response body path $.charactersToAct should be of type array with length 1
+    And response body path $.charactersToAct[0] should be `C1`
     And response body path $.turn.step should be SelectOpponent
-    And response body path $.events.length should be 2
-    And response body path $.events[0] should be {(.*)"event": "CombatStarted"(.*)}
-    And response body path $.events[1] should be {(.*)"event": "TurnStarted", "character": "`C2`"(.*)}
+    And response body path $.events should be of type array with length 2
+    And response body path $.events[0].event should be CombatStarted
+    And response body path $.events[1].event should be TurnStarted
+    And response body path $.events[1].data should be `C2`
 
   Scenario: select opponent
     Given I pipe contents of file ./features/json/character-c1_post.json to body
