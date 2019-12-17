@@ -7,12 +7,23 @@ function startCombat(combat) {
 
   // TODO Assume characters exist in the system (they have been validated before calling startCombat)
 
-  // TODO Set character with highest Ini as turn.attacker
+  const attacker = firstToAct(combat.participants);
+  const startCombatEvents = [
+    { event: "CombatStarted" },
+    {
+      event: "TurnStarted",
+      data: attacker.id
+    }
+  ];
   const startedCombat = {
     ...combat,
     turn: {
-      attacker: firstToAct(combat.participants)
-    }
+      attacker: attacker,
+      step: "SelectOpponent"
+    },
+    events: combat.events
+      ? combat.events.push(startCombatEvents)
+      : startCombatEvents
   };
 
   return startedCombat;
