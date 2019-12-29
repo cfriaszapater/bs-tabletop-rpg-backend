@@ -32,7 +32,7 @@ The URI looks like this, substituting `<user>`, `<pass>` and `cluster0-pmxkl.azu
 
 ### Run
 
-In dev (debug log and monitor file changes):
+In dev:
 
 ```sh
 DEBUG=bs-tabletop-rpg-backend:* npm run devstart | bunyan
@@ -42,6 +42,12 @@ Or:
 
 ```sh
 npm start
+```
+
+#### Debug
+
+```sh
+npm run debug
 ```
 
 ### Deploy to production
