@@ -8,7 +8,7 @@ const random = require("../util/random");
 jest.mock("../util/random");
 
 describe("Combat", () => {
-  it("should turn.attacker be highest Ini on combat start", () => {
+  it("should highest Ini character be turn.attacker on combat start", () => {
     const character1 = character("C1", 6);
     const character2 = character("C2", 5);
     const combat = { participants: [character1, character2] };
@@ -18,7 +18,7 @@ describe("Combat", () => {
     expect(startedCombat.turn.attacker).toEqual(character1);
   });
 
-  it("should turn.attacker be highest reach on combat start and equal Ini", () => {
+  it("should highest reach character be turn.attacker on combat start and equal Ini", () => {
     const character1 = character("C1", 6, 1);
     const character2 = character("C2", 6, 2);
     const combat = { participants: [character1, character2] };
@@ -28,7 +28,7 @@ describe("Combat", () => {
     expect(startedCombat.turn.attacker).toEqual(character2);
   });
 
-  it("should turn.attacker be highest Agi on combat start and equal Ini, reach", () => {
+  it("should highest Agi character be turn.attacker on combat start and equal Ini, reach", () => {
     const character1 = character("C1", 6, 1, 2);
     const character2 = character("C2", 6, 1, 3);
     const combat = { participants: [character1, character2] };
@@ -38,7 +38,7 @@ describe("Combat", () => {
     expect(startedCombat.turn.attacker).toEqual(character2);
   });
 
-  it("should turn.attacker be highest Int on combat start and equal Ini, reach, Agi", () => {
+  it("should highest Int character be turn.attacker on combat start and equal Ini, reach, Agi", () => {
     const character1 = character("C1", 6, 1, 2, 3);
     const character2 = character("C2", 6, 1, 2, 2);
     const combat = { participants: [character1, character2] };
@@ -48,7 +48,7 @@ describe("Combat", () => {
     expect(startedCombat.turn.attacker).toEqual(character1);
   });
 
-  it("should turn.attacker be random on combat start and equal Ini, reach, Agi, Int", () => {
+  it("should random character be turn.attacker on combat start and equal Ini, reach, Agi, Int", () => {
     random.getRandomInt.mockReturnValue(1);
 
     const character1 = character("C1", 6, 1, 2, 2);
