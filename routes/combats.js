@@ -14,7 +14,7 @@ const { validateNotEmpty } = require("./validateNotEmpty");
 router.post("/", postCombat);
 router.get("/", listCombats);
 router.get("/:combatId", getCombat);
-router.patch("/:combatId/turns/:turnId", patchTurn);
+router.patch("/:combatId/turns/:turnNumber", patchTurn);
 router.post(
   "/:combatId/turn/attacks/:attackNumber/attackerStamina",
   postAttackStamina
@@ -50,13 +50,17 @@ async function getCombat(req, res, next) {
 }
 
 async function patchTurn(req, res, next) {
-  const { combatId, turnId } = req.params;
+  const { combatId, turnNumber } = req.params;
   const turnPatch = req.body;
-  debug("patchTurn", combatId, turnId, turnPatch);
+  debug("patchTurn", combatId, turnNumber, turnPatch);
 
   try {
     validateNotEmpty(turnPatch);
-    var turn = await turnAction(combatId, turnId, turnPatch /*, req.user.sub*/);
+    var turn = await turnAction(
+      combatId,
+      Number(turnNumber),
+      turnPatch /*, req.user.sub*/
+    );
     res.status(200).json(turn);
   } catch (err) {
     next(err);

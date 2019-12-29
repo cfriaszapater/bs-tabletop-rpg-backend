@@ -15,10 +15,13 @@ module.exports = (combatRepository, characterRepository) => ({
     return await combatRepository.save(startedCombat);
   },
 
-  turnAction: async (combatId, turnId, turnPatch, userId) => {
+  turnAction: async (combatId, turnNumber, turnPatch, userId) => {
     const combat = await combatRepository.findById(combatId);
-    if (combat.turn.id !== turnId) {
-      throw "Turn " + turnId + " is not the current turn";
+    if (combat.turn.number !== turnNumber) {
+      throw "Turn " +
+        turnNumber +
+        " does not match the current turn " +
+        combat.turn.number;
     }
     if (combat.turn.step === "SelectOpponent") {
       const patchedCombat = selectOpponent(combat, turnPatch, userId);

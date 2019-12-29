@@ -43,7 +43,8 @@ Feature: Combat
     And response body path $.turn.defender.id should be `C1`
     And response body path $.turn.step should be DecideStaminaLowerIni
     And response body path $.turn.currentDecision should be defender
-    And response body path $.event[`eventIndex`] should be {(.*)"event": "OpponentSelected", "data": "`C1`"(.*)}
+    And response body path $.events[`eventIndex`].event should be OpponentSelected
+    And response body path $.events[`eventIndex`].data should be `C1`
 
   Scenario: lower Ini defender C1 declares defense, attack not resolved
     Given I pipe contents of file ./features/json/character-c1_post.json to body
