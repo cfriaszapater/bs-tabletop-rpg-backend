@@ -120,6 +120,9 @@ function declareActionLowerIni(combat, turnPatch) {
       throw declareActionNoDefenderStamina;
     }
 
+    const staminaAmount = defenderStamina.block + defenderStamina.dodge;
+    combat.turn.defender.investStamina(staminaAmount);
+
     const declareDefenseEvents = [
       { event: "DefenseDeclared", data: combat.turn.defender.id }
     ];

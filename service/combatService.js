@@ -4,6 +4,7 @@ const {
   selectOpponent,
   declareActionLowerIni
 } = require("../domain/combat");
+const { character } = require("../domain/character");
 
 module.exports = (combatRepository, characterRepository) => ({
   createCombat: async (combat, userId) => {
@@ -82,10 +83,12 @@ module.exports = (combatRepository, characterRepository) => ({
 async function loadParticipants(combat, characterRepository) {
   return {
     ...combat,
-    participants: await Promise.all(
-      combat.participants.map(character =>
-        characterRepository.findById(character)
+    participants: (
+      await Promise.all(
+        combat.participants.map(characterId =>
+          characterRepository.findById(characterId)
+        )
       )
-    )
+    ).map(characterData => character(characterData))
   };
 }

@@ -1,3 +1,4 @@
+const { givenCharacterData } = require("./givenCharacterData");
 const {
   startCombat,
   selectOpponent,
@@ -5,13 +6,14 @@ const {
   notEnoughParticipantsError,
   selectOpponentNoDefenderError
 } = require("./combat");
+const { character } = require("./character");
 const random = require("../util/random");
 jest.mock("../util/random");
 
 describe("Combat", () => {
   it("should highest Ini character be turn.attacker on combat start", () => {
-    const character1 = character("C1", 6);
-    const character2 = character("C2", 5);
+    const character1 = givenCharacterData("C1", 6);
+    const character2 = givenCharacterData("C2", 5);
     const combat = { participants: [character1, character2] };
 
     const startedCombat = startCombat(combat);
@@ -20,8 +22,8 @@ describe("Combat", () => {
   });
 
   it("should highest reach character be turn.attacker on combat start and equal Ini", () => {
-    const character1 = character("C1", 6, 1);
-    const character2 = character("C2", 6, 2);
+    const character1 = givenCharacterData("C1", 6, 1);
+    const character2 = givenCharacterData("C2", 6, 2);
     const combat = { participants: [character1, character2] };
 
     const startedCombat = startCombat(combat);
@@ -30,8 +32,8 @@ describe("Combat", () => {
   });
 
   it("should highest Agi character be turn.attacker on combat start and equal Ini, reach", () => {
-    const character1 = character("C1", 6, 1, 2);
-    const character2 = character("C2", 6, 1, 3);
+    const character1 = givenCharacterData("C1", 6, 1, 2);
+    const character2 = givenCharacterData("C2", 6, 1, 3);
     const combat = { participants: [character1, character2] };
 
     const startedCombat = startCombat(combat);
@@ -40,8 +42,8 @@ describe("Combat", () => {
   });
 
   it("should highest Int character be turn.attacker on combat start and equal Ini, reach, Agi", () => {
-    const character1 = character("C1", 6, 1, 2, 3);
-    const character2 = character("C2", 6, 1, 2, 2);
+    const character1 = givenCharacterData("C1", 6, 1, 2, 3);
+    const character2 = givenCharacterData("C2", 6, 1, 2, 2);
     const combat = { participants: [character1, character2] };
 
     const startedCombat = startCombat(combat);
@@ -52,8 +54,8 @@ describe("Combat", () => {
   it("should random character be turn.attacker on combat start and equal Ini, reach, Agi, Int", () => {
     random.getRandomInt.mockReturnValue(1);
 
-    const character1 = character("C1", 6, 1, 2, 2);
-    const character2 = character("C2", 6, 1, 2, 2);
+    const character1 = givenCharacterData("C1", 6, 1, 2, 2);
+    const character2 = givenCharacterData("C2", 6, 1, 2, 2);
     const combat = { participants: [character1, character2] };
 
     const startedCombat = startCombat(combat);
@@ -75,7 +77,7 @@ describe("Combat", () => {
     }).toThrow(notEnoughParticipantsError);
 
     expect(() => {
-      startCombat({ participants: [character("jarl", 1)] });
+      startCombat({ participants: [givenCharacterData("jarl", 1)] });
     }).toThrow(notEnoughParticipantsError);
   });
 });
@@ -83,7 +85,10 @@ describe("Combat", () => {
 it("should start combat", () => {
   const actingCharacterId = "C1";
   const combat = {
-    participants: [character(actingCharacterId, 6), character("C2", 5)]
+    participants: [
+      givenCharacterData(actingCharacterId, 6),
+      givenCharacterData("C2", 5)
+    ]
   };
 
   const startedCombat = startCombat(combat);
@@ -100,7 +105,7 @@ it("should start combat", () => {
 
 it("should set charactersToAct on turn start", () => {
   const combat = {
-    participants: [character("C1", 6), character("C2", 5)]
+    participants: [givenCharacterData("C1", 6), givenCharacterData("C2", 5)]
   };
 
   const startedCombat = startCombat(combat);
@@ -111,7 +116,7 @@ it("should set charactersToAct on turn start", () => {
 
 it("should select opponent on started combat", () => {
   const combat = startCombat({
-    participants: [character("C1", 6), character("C2", 5)]
+    participants: [givenCharacterData("C1", 6), givenCharacterData("C2", 5)]
   });
 
   const patchedCombat = selectOpponent(combat, { defender: "C2" });
@@ -129,7 +134,7 @@ it("should select opponent on started combat", () => {
 
 it("should error on select opponent without defender", () => {
   const combat = startCombat({
-    participants: [character("C1", 6), character("C2", 5)]
+    participants: [givenCharacterData("C1", 6), givenCharacterData("C2", 5)]
   });
 
   expect(() => {
@@ -138,9 +143,9 @@ it("should error on select opponent without defender", () => {
 });
 
 it("should lower ini defender declare action on higher ini attacker selected opponent", () => {
-  const defender = character("C2", 5);
+  const defender = character(givenCharacterData("C2", 5));
   const startedCombat = startCombat({
-    participants: [character("C1", 6), defender]
+    participants: [givenCharacterData("C1", 6), defender]
   });
   const opponentSelected = selectOpponent(startedCombat, { defender: "C2" });
   const defenderPreviousStamina = defender.characteristics.stamina.current;
@@ -156,27 +161,5 @@ it("should lower ini defender declare action on higher ini attacker selected opp
     event: "DefenseDeclared",
     data: "C2"
   });
-  expect(defender.characteristics.stamina.current).toBe(
-    defenderPreviousStamina - 2
-  );
+  expect(defender.stamina()).toBe(defenderPreviousStamina - 2);
 });
-
-// Character with only the attributes needed in specs
-function character(id, ini, reach, agi, int) {
-  return {
-    id: id,
-    attributes: {
-      agility: agi,
-      intelligence: int
-    },
-    characteristics: {
-      initiative: {
-        current: ini
-      },
-      reach: reach,
-      stamina: {
-        current: 10
-      }
-    }
-  };
-}
