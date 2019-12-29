@@ -52,20 +52,20 @@ async function getCombat(req, res, next) {
 async function patchTurn(req, res, next) {
   const { combatId, turnNumber } = req.params;
   const turnPatch = req.body;
-  debug("patchTurn", combatId, turnNumber, turnPatch);
+  debug("patchTurn: ", combatId, turnNumber, turnPatch);
 
   try {
     validateNotEmpty(turnPatch);
-    var turn = await turnAction(
+    var combat = await turnAction(
       combatId,
       Number(turnNumber),
       turnPatch /*, req.user.sub*/
     );
-    res.status(200).json(turn);
+    res.status(200).json(combat);
+    debug("patchTurn result: ", JSON.stringify(combat));
   } catch (err) {
     next(err);
   }
-  return "TODO return updated turn";
 }
 
 async function postAttackStamina(req, res, next) {

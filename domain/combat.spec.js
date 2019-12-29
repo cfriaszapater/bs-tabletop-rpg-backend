@@ -1,6 +1,7 @@
 const {
   startCombat,
   selectOpponent,
+  declareActionLowerIni,
   notEnoughParticipantsError,
   selectOpponentNoDefenderError
 } = require("./combat");
@@ -108,7 +109,7 @@ it("should set charactersToAct on turn start", () => {
   expect(startedCombat.charactersToAct[0]).toEqual("C2");
 });
 
-it("should select opponent", () => {
+it("should select opponent on started combat", () => {
   const combat = startCombat({
     participants: [character("C1", 6), character("C2", 5)]
   });
@@ -117,6 +118,7 @@ it("should select opponent", () => {
 
   expect(patchedCombat.turn.defender.id).toBe("C2");
   expect(patchedCombat.turn.step).toBe("DecideStaminaLowerIni");
+  expect(patchedCombat.turn.number).toBe(1);
   expect(patchedCombat.turn.currentDecision).toBe("defender");
   expect(patchedCombat.events.length).toBe(combat.events.length + 1);
   expect(patchedCombat.events[patchedCombat.events.length - 1]).toEqual({
@@ -126,9 +128,8 @@ it("should select opponent", () => {
 });
 
 it("should error on select opponent without defender", () => {
-  const actingCharacterId = "C1";
   const combat = startCombat({
-    participants: [character(actingCharacterId, 6), character("C2", 5)]
+    participants: [character("C1", 6), character("C2", 5)]
   });
 
   expect(() => {
@@ -136,7 +137,31 @@ it("should error on select opponent without defender", () => {
   }).toThrow(selectOpponentNoDefenderError);
 });
 
-// Character with only the attributes needed to decide who acts first in initiative turn
+it("should lower ini defender declare action on higher ini attacker selected opponent", () => {
+  const defender = character("C2", 5);
+  const startedCombat = startCombat({
+    participants: [character("C1", 6), defender]
+  });
+  const opponentSelected = selectOpponent(startedCombat, { defender: "C2" });
+  const defenderPreviousStamina = defender.characteristics.stamina.current;
+
+  const defenderStamina = { dodge: 1, block: 1 };
+  const patchedCombat = declareActionLowerIni(opponentSelected, {
+    defenderStamina
+  });
+
+  expect(patchedCombat.turn.defenderStamina).toBe(defenderStamina);
+  expect(patchedCombat.events.length).toBe(opponentSelected.events.length + 1);
+  expect(patchedCombat.events[patchedCombat.events.length - 1]).toEqual({
+    event: "DefenseDeclared",
+    data: "C2"
+  });
+  expect(defender.characteristics.stamina.current).toBe(
+    defenderPreviousStamina - 2
+  );
+});
+
+// Character with only the attributes needed in specs
 function character(id, ini, reach, agi, int) {
   return {
     id: id,
@@ -148,7 +173,10 @@ function character(id, ini, reach, agi, int) {
       initiative: {
         current: ini
       },
-      reach: reach
+      reach: reach,
+      stamina: {
+        current: 10
+      }
     }
   };
 }

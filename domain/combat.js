@@ -79,7 +79,7 @@ function actingOrder(c1, c2) {
   }
 }
 
-const selectOpponentNoDefenderError = "defender expected on SelectOpponent";
+const selectOpponentNoDefenderError = "defender expected on selectOpponent";
 
 function selectOpponent(combat, turnPatch, userId) {
   // if (combat.turn.attacker.user !== userId) {
@@ -104,7 +104,8 @@ function selectOpponent(combat, turnPatch, userId) {
   return {
     ...combat,
     turn: {
-      defender: defender,
+      ...combat.turn,
+      defender,
       step: "DecideStaminaLowerIni",
       currentDecision: "defender"
     },
@@ -112,9 +113,44 @@ function selectOpponent(combat, turnPatch, userId) {
   };
 }
 
+function declareActionLowerIni(combat, turnPatch) {
+  if (combat.turn.currentDecision === "defender") {
+    const { defenderStamina } = turnPatch;
+    if (defenderStamina === undefined) {
+      throw declareActionNoDefenderStamina;
+    }
+
+    const declareDefenseEvents = [
+      { event: "DefenseDeclared", data: combat.turn.defender.id }
+    ];
+
+    return {
+      ...combat,
+      turn: {
+        ...combat.turn,
+        defenderStamina,
+        step: "DecideStaminaHigherIni",
+        currentDecision: "attacker"
+      },
+      events: combat.events.concat(declareDefenseEvents)
+    };
+  } else if (combat.turn.currentDecision === "attacker") {
+    throw "TODO";
+  } else {
+    throw "Unexpected combat.turn.currentDecision [" +
+      combat.turn.currentDecision +
+      "]";
+  }
+}
+
+const declareActionNoDefenderStamina =
+  "defenderStamina expected on declareActionLowerIni";
+
 module.exports = {
   startCombat,
   notEnoughParticipantsError,
   selectOpponent,
-  selectOpponentNoDefenderError
+  selectOpponentNoDefenderError,
+  declareActionLowerIni,
+  declareActionNoDefenderStamina
 };

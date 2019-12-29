@@ -1,5 +1,9 @@
 const uuidv4 = require("uuid/v4");
-const { startCombat, selectOpponent } = require("../domain/combat");
+const {
+  startCombat,
+  selectOpponent,
+  declareActionLowerIni
+} = require("../domain/combat");
 
 module.exports = (combatRepository, characterRepository) => ({
   createCombat: async (combat, userId) => {
@@ -15,17 +19,28 @@ module.exports = (combatRepository, characterRepository) => ({
     return await combatRepository.save(startedCombat);
   },
 
+  /**
+   * Execute an action in a turn (eg: SelectOpponent).
+   *
+   * Returns patched combat.
+   */
   turnAction: async (combatId, turnNumber, turnPatch, userId) => {
     const combat = await combatRepository.findById(combatId);
     if (combat.turn.number !== turnNumber) {
-      throw "Turn " +
+      throw "Turn [" +
         turnNumber +
-        " does not match the current turn " +
-        combat.turn.number;
+        "] does not match the current turn [" +
+        combat.turn.number +
+        "]";
     }
     if (combat.turn.step === "SelectOpponent") {
       const patchedCombat = selectOpponent(combat, turnPatch, userId);
       return await combatRepository.save(patchedCombat);
+    } else if (combat.turn.step === "DecideStaminaLowerIni") {
+      const patchedCombat = declareActionLowerIni(combat, turnPatch, userId);
+      return await combatRepository.save(patchedCombat);
+    } else {
+      throw "Unexpected combat.turn.step [" + combat.turn.step + "]";
     }
   },
 
