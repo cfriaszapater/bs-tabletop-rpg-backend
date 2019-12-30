@@ -3,6 +3,7 @@ const {
   startCombat,
   selectOpponent,
   declareActionLowerIni,
+  declareActionHigherIni,
   notEnoughParticipantsError,
   selectOpponentNoDefenderError
 } = require("./combat");
@@ -163,5 +164,35 @@ describe("Combat", () => {
       data: "C2"
     });
     expect(defender.stamina()).toBe(defenderPreviousStamina - 2);
+    expect(patchedCombat.turn.currentDecision).toBe("attacker");
+  });
+
+  it("should higher ini attacker declare action on lower ini defender declared action", () => {
+    const defender = character(givenCharacterData("C2", 5));
+    const attacker = character(givenCharacterData("C1", 6));
+    const startedCombat = startCombat({
+      participants: [attacker, defender]
+    });
+    const opponentSelected = selectOpponent(startedCombat, { defender: "C2" });
+    const declaredActionLowerIni = declareActionLowerIni(opponentSelected, {
+      defenderStamina: { dodge: 1, block: 1 }
+    });
+    const attackerPreviousStamina = attacker.stamina();
+
+    const attackerStamina = { impact: 1, damage: 1 };
+    const patchedCombat = declareActionHigherIni(declaredActionLowerIni, {
+      attackerStamina
+    });
+
+    expect(patchedCombat.turn.attackerStamina).toBe(attackerStamina);
+    expect(patchedCombat.events.length).toBe(
+      declaredActionLowerIni.events.length + 1
+    );
+    expect(patchedCombat.events[patchedCombat.events.length - 1]).toEqual({
+      event: "AttackDeclared",
+      data: "C1"
+    });
+    expect(attacker.stamina()).toBe(attackerPreviousStamina - 2);
+    expect(patchedCombat.turn.currentDecision).toBeUndefined();
   });
 });

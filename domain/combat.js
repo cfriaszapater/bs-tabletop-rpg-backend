@@ -138,6 +138,7 @@ function declareActionLowerIni(combat, turnPatch) {
       events: combat.events.concat(declareDefenseEvents)
     };
   } else if (combat.turn.currentDecision === "attacker") {
+    // TODO combat.turn.currentDecision === "attacker"
     throw "TODO";
   } else {
     throw "Unexpected combat.turn.currentDecision [" +
@@ -147,7 +148,44 @@ function declareActionLowerIni(combat, turnPatch) {
 }
 
 const declareActionNoDefenderStamina =
-  "defenderStamina expected on declareActionLowerIni";
+  "defenderStamina expected on declareActionLowerIni and currentDecision is defender";
+
+function declareActionHigherIni(combat, turnPatch) {
+  if (combat.turn.currentDecision === "defender") {
+    // TODO combat.turn.currentDecision === "defender"
+    throw "TODO";
+  } else if (combat.turn.currentDecision === "attacker") {
+    const { attackerStamina } = turnPatch;
+    if (attackerStamina === undefined) {
+      throw declareActionNoAttackerStamina;
+    }
+
+    const staminaAmount = attackerStamina.impact + attackerStamina.damage;
+    combat.turn.attacker.investStamina(staminaAmount);
+
+    const declareAttackEvents = [
+      { event: "AttackDeclared", data: combat.turn.attacker.id }
+    ];
+
+    return {
+      ...combat,
+      turn: {
+        ...combat.turn,
+        attackerStamina,
+        step: "AttackResolved",
+        currentDecision: undefined
+      },
+      events: combat.events.concat(declareAttackEvents)
+    };
+  } else {
+    throw "Unexpected combat.turn.currentDecision [" +
+      combat.turn.currentDecision +
+      "]";
+  }
+}
+
+const declareActionNoAttackerStamina =
+  "attackerStamina expected on declareActionHigherIni and currentDecision is attacker";
 
 module.exports = {
   startCombat,
@@ -155,5 +193,6 @@ module.exports = {
   selectOpponent,
   selectOpponentNoDefenderError,
   declareActionLowerIni,
-  declareActionNoDefenderStamina
+  declareActionNoDefenderStamina,
+  declareActionHigherIni
 };

@@ -83,22 +83,24 @@ Feature: Combat
     And I set body to {"participants":["`C1`", "`C2`"]}
     And I POST to /combats
     And I store the value of body path $.id as combat1 in scenario scope
-    And I store the value of body path $.id.turn.id as turn1 in scenario scope
+    And I store the value of body path $.turn.number as turn1 in scenario scope
     And I set body to {"defender": "`C1`"}
     And I PATCH /combats/`combat1`/turns/`turn1`
     And I set body to {"defenderStamina": {"Dodge": 1, "Block": 1}}
     And I PATCH /combats/`combat1`/turns/`turn1`
     And I store the value of body path $.events.length as eventIndex in scenario scope
     And I store the value of body path $.turn.defender.characteristics.health.current as previousDefenderHealth in scenario scope
-    And I set body to {"attackerStamina": {"Impact": 1, "Damage": 1}}
+    And I set body to {"attackerStamina": {"impact": 1, "damage": 1}}
     When I PATCH /combats/`combat1`/turns/`turn1`
-    Then response body path $.turn.attackerStamina should be {"Impact": 1, "Damage": 1}
+    Then response code should be 200
+    And response body path $.turn.attackerStamina.impact should be 1
+    And response body path $.turn.attackerStamina.damage should be 1
     And response body path $.turn.attacker.characteristics.stamina.current should be 7
     And response body path $.turn.attackResult should be {"hit": .+, "damage": \d+, "coverageDamage": \d+, "stunned": \d+(.*)}
     And I store the value of body path $.turn.attackResult as attackResult1 in scenario scope
     And response body path $.event[`eventIndex`] should be {(.*)"event": "AttackResolved", "attacker": "`C2`", "defender": "`C1`", "result": `attackResult1`(.*)}
     And response body path $.turn.step should be AttackResolved
-    And response body path $.turn should not be .*currentDecision.*
+    And response body path $.turn.currentDecision should be undefined
     And I store the value of body path $.turn.defender.characteristics.health.current as defenderHealth in scenario scope
     And I store the value of body path $.turn.attackResult.damage as damage1 in scenario scope
     # XXX possible alternative: And value of scenario variable defenderHealth should be `previousDefenderHealth` - `damage1`

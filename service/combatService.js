@@ -2,7 +2,8 @@ const uuidv4 = require("uuid/v4");
 const {
   startCombat,
   selectOpponent,
-  declareActionLowerIni
+  declareActionLowerIni,
+  declareActionHigherIni
 } = require("../domain/combat");
 const { character } = require("../domain/character");
 
@@ -39,6 +40,9 @@ module.exports = (combatRepository, characterRepository) => ({
       return await combatRepository.save(patchedCombat);
     } else if (combat.turn.step === "DecideStaminaLowerIni") {
       const patchedCombat = declareActionLowerIni(combat, turnPatch, userId);
+      return await combatRepository.save(patchedCombat);
+    } else if (combat.turn.step === "DecideStaminaHigherIni") {
+      const patchedCombat = declareActionHigherIni(combat, turnPatch, userId);
       return await combatRepository.save(patchedCombat);
     } else {
       throw "Unexpected combat.turn.step [" + combat.turn.step + "]";
