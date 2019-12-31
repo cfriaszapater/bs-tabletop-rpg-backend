@@ -7,9 +7,11 @@ const {
   notEnoughParticipantsError,
   selectOpponentNoDefenderError
 } = require("./combat");
-const { character } = require("./character");
+const { stamina } = require("./character");
 const random = require("../util/random");
 jest.mock("../util/random");
+const attack = require("./attack");
+jest.mock("./attack");
 
 describe("Combat", () => {
   it("should highest Ini character be turn.attacker on combat start", () => {
@@ -93,7 +95,7 @@ describe("Combat", () => {
 
     const startedCombat = startCombat(combat);
 
-    expect(startedCombat.turn.step).toEqual("SelectOpponent");
+    expect(startedCombat.turn.step).toBe("SelectOpponent");
     expect(startedCombat.turn.number).toBe(1);
     expect(startedCombat.events.length).toBe(2);
     expect(startedCombat.events[0]).toEqual({ event: "CombatStarted" });
@@ -143,12 +145,12 @@ describe("Combat", () => {
   });
 
   it("should lower ini defender declare action on higher ini attacker selected opponent", () => {
-    const defender = character(givenCharacterData("C2", 5));
+    const defender = givenCharacterData("C2", 5);
     const startedCombat = startCombat({
       participants: [givenCharacterData("C1", 6), defender]
     });
     const opponentSelected = selectOpponent(startedCombat, { defender: "C2" });
-    const defenderPreviousStamina = defender.characteristics.stamina.current;
+    const defenderPreviousStamina = stamina(defender);
 
     const defenderStamina = { dodge: 1, block: 1 };
     const patchedCombat = declareActionLowerIni(opponentSelected, {
@@ -163,13 +165,16 @@ describe("Combat", () => {
       event: "DefenseDeclared",
       data: "C2"
     });
-    expect(defender.stamina()).toBe(defenderPreviousStamina - 2);
+    expect(stamina(patchedCombat.turn.defender)).toBe(
+      defenderPreviousStamina - 2
+    );
     expect(patchedCombat.turn.currentDecision).toBe("attacker");
+    expect(patchedCombat.turn.step).toBe("DecideStaminaHigherIni");
   });
 
-  it("should higher ini attacker declare action on lower ini defender declared action", () => {
-    const defender = character(givenCharacterData("C2", 5));
-    const attacker = character(givenCharacterData("C1", 6));
+  it("should higher ini attacker declare action and resolve attack", () => {
+    const defender = givenCharacterData("C2", 5);
+    const attacker = givenCharacterData("C1", 6);
     const startedCombat = startCombat({
       participants: [attacker, defender]
     });
@@ -177,7 +182,15 @@ describe("Combat", () => {
     const declaredActionLowerIni = declareActionLowerIni(opponentSelected, {
       defenderStamina: { dodge: 1, block: 1 }
     });
-    const attackerPreviousStamina = attacker.stamina();
+    const attackerPreviousStamina = stamina(attacker);
+    const previousEventsLength = declaredActionLowerIni.events.length;
+    const attackResult = {
+      hit: true,
+      damage: 1,
+      coverageDamage: 0,
+      stunned: 0
+    };
+    attack.resolveAttack.mockReturnValue(attackResult);
 
     const attackerStamina = { impact: 1, damage: 1 };
     const patchedCombat = declareActionHigherIni(declaredActionLowerIni, {
@@ -185,14 +198,20 @@ describe("Combat", () => {
     });
 
     expect(patchedCombat.turn.attackerStamina).toBe(attackerStamina);
-    expect(patchedCombat.events.length).toBe(
-      declaredActionLowerIni.events.length + 1
-    );
-    expect(patchedCombat.events[patchedCombat.events.length - 1]).toEqual({
+    expect(patchedCombat.events.length).toBeGreaterThan(previousEventsLength);
+    expect(patchedCombat.events[previousEventsLength]).toEqual({
       event: "AttackDeclared",
       data: "C1"
     });
-    expect(attacker.stamina()).toBe(attackerPreviousStamina - 2);
+    expect(stamina(patchedCombat.turn.attacker)).toBe(
+      attackerPreviousStamina - 2
+    );
     expect(patchedCombat.turn.currentDecision).toBeUndefined();
+    expect(patchedCombat.turn.step).toBe("AttackResolved");
+    // TODO check attack resolved
+    // expect(patchedCombat.events[previousEventsLength + 1]).toEqual({
+    //   event: "AttackResolved",
+    //   data: attackResult
+    // });
   });
 });

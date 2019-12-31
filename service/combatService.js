@@ -87,12 +87,10 @@ module.exports = (combatRepository, characterRepository) => ({
 async function loadParticipants(combat, characterRepository) {
   return {
     ...combat,
-    participants: (
-      await Promise.all(
-        combat.participants.map(characterId =>
-          characterRepository.findById(characterId)
-        )
+    participants: await Promise.all(
+      combat.participants.map(characterId =>
+        characterRepository.findById(characterId)
       )
-    ).map(characterData => character(characterData))
+    )
   };
 }

@@ -1,4 +1,6 @@
 const random = require("../util/random");
+const { resolveAttack } = require("./attack");
+const { investStamina } = require("./character");
 
 function startCombat(combat) {
   if (!enoughParticipants(combat)) {
@@ -121,7 +123,8 @@ function declareActionLowerIni(combat, turnPatch) {
     }
 
     const staminaAmount = defenderStamina.block + defenderStamina.dodge;
-    combat.turn.defender.investStamina(staminaAmount);
+    combat.turn.defender = investStamina(combat.turn.defender, staminaAmount);
+    // TODO save defender after investing stamina
 
     const declareDefenseEvents = [
       { event: "DefenseDeclared", data: combat.turn.defender.id }
@@ -161,11 +164,19 @@ function declareActionHigherIni(combat, turnPatch) {
     }
 
     const staminaAmount = attackerStamina.impact + attackerStamina.damage;
-    combat.turn.attacker.investStamina(staminaAmount);
+    combat.turn.attacker = investStamina(combat.turn.attacker, staminaAmount);
+    // TODO save character after investing stamina
 
     const declareAttackEvents = [
       { event: "AttackDeclared", data: combat.turn.attacker.id }
     ];
+
+    // TODO const attackResult = resolveAttack(
+    //   attacker,
+    //   attackerStamina,
+    //   defender,
+    //   defenderStamina
+    // );
 
     return {
       ...combat,

@@ -1,13 +1,19 @@
-function character(characterData) {
+const stamina = character => character.characteristics.stamina.current;
+
+function investStamina(character, staminaAmount) {
   return {
-    ...characterData,
-    stamina: () => characterData.characteristics.stamina.current,
-    investStamina: staminaAmount =>
-      (characterData.characteristics.stamina.current =
-        characterData.characteristics.stamina.current - staminaAmount)
+    ...character,
+    characteristics: {
+      ...character.characteristics,
+      stamina: {
+        ...character.characteristics.stamina,
+        current: character.characteristics.stamina.current - staminaAmount
+      }
+    }
   };
 }
 
 module.exports = {
-  character
+  stamina,
+  investStamina
 };
