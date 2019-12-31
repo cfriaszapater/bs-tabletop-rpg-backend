@@ -123,8 +123,7 @@ function declareActionLowerIni(combat, turnPatch) {
     }
 
     const staminaAmount = defenderStamina.block + defenderStamina.dodge;
-    combat.turn.defender = investStamina(combat.turn.defender, staminaAmount);
-    // TODO save defender after investing stamina
+    const defender = investStamina(combat.turn.defender, staminaAmount);
 
     const declareDefenseEvents = [
       { event: "DefenseDeclared", data: combat.turn.defender.id }
@@ -136,7 +135,8 @@ function declareActionLowerIni(combat, turnPatch) {
         ...combat.turn,
         defenderStamina,
         step: "DecideStaminaHigherIni",
-        currentDecision: "attacker"
+        currentDecision: "attacker",
+        defender
       },
       events: combat.events.concat(declareDefenseEvents)
     };
@@ -164,8 +164,7 @@ function declareActionHigherIni(combat, turnPatch) {
     }
 
     const staminaAmount = attackerStamina.impact + attackerStamina.damage;
-    combat.turn.attacker = investStamina(combat.turn.attacker, staminaAmount);
-    // TODO save character after investing stamina
+    const attacker = investStamina(combat.turn.attacker, staminaAmount);
 
     const declareAttackEvents = [
       { event: "AttackDeclared", data: combat.turn.attacker.id }
@@ -178,13 +177,16 @@ function declareActionHigherIni(combat, turnPatch) {
     //   defenderStamina
     // );
 
+    // TODO apply attackResult to defender (cause damage, etc)
+
     return {
       ...combat,
       turn: {
         ...combat.turn,
         attackerStamina,
         step: "AttackResolved",
-        currentDecision: undefined
+        currentDecision: undefined,
+        attacker
       },
       events: combat.events.concat(declareAttackEvents)
     };

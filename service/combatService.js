@@ -40,10 +40,10 @@ module.exports = (combatRepository, characterRepository) => ({
       return await combatRepository.save(patchedCombat);
     } else if (combat.turn.step === "DecideStaminaLowerIni") {
       const patchedCombat = declareActionLowerIni(combat, turnPatch, userId);
-      return await combatRepository.save(patchedCombat);
+      return await save(patchedCombat, characterRepository, combatRepository);
     } else if (combat.turn.step === "DecideStaminaHigherIni") {
       const patchedCombat = declareActionHigherIni(combat, turnPatch, userId);
-      return await combatRepository.save(patchedCombat);
+      return await save(patchedCombat, characterRepository, combatRepository);
     } else {
       throw "Unexpected combat.turn.step [" + combat.turn.step + "]";
     }
@@ -83,6 +83,14 @@ module.exports = (combatRepository, characterRepository) => ({
     //   .exec();
   }
 });
+
+async function save(patchedCombat, characterRepository, combatRepository) {
+  await Promise.all([
+    characterRepository.save(patchedCombat.turn.attacker),
+    characterRepository.save(patchedCombat.turn.defender)
+  ]);
+  return await combatRepository.save(patchedCombat);
+}
 
 async function loadParticipants(combat, characterRepository) {
   return {
