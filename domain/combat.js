@@ -170,7 +170,11 @@ function declareActionHigherIni(combat, turnPatch) {
       { event: "AttackDeclared", data: combat.turn.attacker.id }
     ];
 
-    const attackResult = resolveAttack(combat.turn);
+    const turn = {
+      ...combat.turn,
+      attackerStamina
+    };
+    const attackResult = resolveAttack(turn);
 
     const defender = sufferConsequences(combat.turn.defender, attackResult);
 
@@ -184,8 +188,7 @@ function declareActionHigherIni(combat, turnPatch) {
     return {
       ...combat,
       turn: {
-        ...combat.turn,
-        attackerStamina,
+        ...turn,
         step: "AttackResolved",
         currentDecision: undefined,
         attacker,

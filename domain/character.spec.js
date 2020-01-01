@@ -3,8 +3,12 @@ const {
   stamina,
   health,
   investStamina,
-  sufferConsequences
+  sufferConsequences,
+  resolveImpact,
+  impactRunes
 } = require("./character");
+const runes = require("./runes");
+jest.mock("./runes");
 
 describe("Character", () => {
   it("should return current stamina", () => {
@@ -22,10 +26,31 @@ describe("Character", () => {
 
   it("should suffer consequences of resolved attack", () => {
     const c1 = givenCharacterData("C1", 6);
-    const attack1 = { hit: true, damage: 4 };
+    const attackResult = { hit: true, damage: 4 };
 
-    const c2 = sufferConsequences(c1, attack1);
+    const c2 = sufferConsequences(c1, attackResult);
 
-    expect(health(c2)).toBe(health(c1) - attack1.damage);
+    expect(health(c2)).toBe(health(c1) - attackResult.damage);
+  });
+
+  it("should impact runes be agility", () => {
+    const c1 = givenCharacterData("C1", 6, 2, 3);
+
+    expect(impactRunes(c1)).toBe(3);
+  });
+
+  it("should impact runes be agility * 2 with stamina", () => {
+    const c1 = givenCharacterData("C1", 6, 2, 3);
+
+    expect(impactRunes(c1, 1)).toBe(6);
+  });
+
+  it("should resolve impact", () => {
+    const c1 = givenCharacterData("C1", 6);
+    runes.throwRunes.mockReturnValue(2);
+
+    const finalImpact = resolveImpact(c1, 1);
+
+    expect(finalImpact).toBe(6);
   });
 });
