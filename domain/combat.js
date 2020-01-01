@@ -1,6 +1,6 @@
 const random = require("../util/random");
 const { resolveAttack } = require("./attack");
-const { investStamina } = require("./character");
+const { investStamina, sufferConsequences } = require("./character");
 
 function startCombat(combat) {
   if (!enoughParticipants(combat)) {
@@ -83,7 +83,7 @@ function actingOrder(c1, c2) {
 
 const selectOpponentNoDefenderError = "defender expected on selectOpponent";
 
-function selectOpponent(combat, turnPatch, userId) {
+function selectOpponent(combat, turnPatch /*, userId*/) {
   // if (combat.turn.attacker.user !== userId) {
   //   throw "User " +
   //     userId +
@@ -170,14 +170,16 @@ function declareActionHigherIni(combat, turnPatch) {
       { event: "AttackDeclared", data: combat.turn.attacker.id }
     ];
 
-    // TODO const attackResult = resolveAttack(
-    //   attacker,
-    //   attackerStamina,
-    //   defender,
-    //   defenderStamina
-    // );
+    const attackResult = resolveAttack(combat.turn);
 
-    // TODO apply attackResult to defender (cause damage, etc)
+    const defender = sufferConsequences(combat.turn.defender, attackResult);
+
+    const resolvedAttackEvents = [
+      {
+        event: "AttackResolved",
+        data: { attackResult, attacker: attacker.id, defender: defender.id }
+      }
+    ];
 
     return {
       ...combat,
@@ -186,9 +188,13 @@ function declareActionHigherIni(combat, turnPatch) {
         attackerStamina,
         step: "AttackResolved",
         currentDecision: undefined,
-        attacker
+        attacker,
+        defender,
+        attackResult
       },
-      events: combat.events.concat(declareAttackEvents)
+      events: combat.events
+        .concat(declareAttackEvents)
+        .concat(resolvedAttackEvents)
     };
   } else {
     throw "Unexpected combat.turn.currentDecision [" +

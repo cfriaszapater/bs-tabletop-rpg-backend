@@ -96,12 +96,16 @@ Feature: Combat
     And response body path $.turn.attackerStamina.impact should be 1
     And response body path $.turn.attackerStamina.damage should be 1
     And response body path $.turn.attacker.characteristics.stamina.current should be 7
-    And response body path $.turn.attackResult should be {"hit": .+, "damage": \d+, "coverageDamage": \d+, "stunned": \d+(.*)}
+    And response body path $.turn.attackResult.hit should be true|false
+    And response body path $.turn.attackResult.damage should be \d+
+    And response body path $.turn.attackResult.coverageDamage should be \d+
+    And response body path $.turn.attackResult.stunned should be \d+
+    And response body path $.events[`eventIndex`].event should be AttackDeclared
+    And response body path $.events[`eventIndex`].data should be `C2`
     And I store the value of body path $.turn.attackResult as attackResult1 in scenario scope
-    And response body path $.event[`eventIndex`] should be {(.*)"event": "AttackResolved", "attacker": "`C2`", "defender": "`C1`", "result": `attackResult1`(.*)}
+    And response body path $.events[(`eventIndex`+1)].event should be AttackResolved
+    And response body path $.events[(`eventIndex`+1)].data.attacker should be `C2`
+    And response body path $.events[(`eventIndex`+1)].data.defender should be `C1`
+    And response body path $.events[(`eventIndex`+1)].data.attackResult should be `attackResult1`
     And response body path $.turn.step should be AttackResolved
-    And response body path $.turn.currentDecision should be undefined
-    And I store the value of body path $.turn.defender.characteristics.health.current as defenderHealth in scenario scope
-    And I store the value of body path $.turn.attackResult.damage as damage1 in scenario scope
-    # XXX possible alternative: And value of scenario variable defenderHealth should be `previousDefenderHealth` - `damage1`
-    And `defenderHealth` is `previousDefenderHealth` minus `damage1`
+    And response body path $.turn.currentDecision should be null

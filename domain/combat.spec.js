@@ -7,7 +7,7 @@ const {
   notEnoughParticipantsError,
   selectOpponentNoDefenderError
 } = require("./combat");
-const { stamina } = require("./character");
+const { stamina, health } = require("./character");
 const random = require("../util/random");
 jest.mock("../util/random");
 const attack = require("./attack");
@@ -191,6 +191,7 @@ describe("Combat", () => {
       stunned: 0
     };
     attack.resolveAttack.mockReturnValue(attackResult);
+    const defenderPreviousHealth = health(defender);
 
     const attackerStamina = { impact: 1, damage: 1 };
     const patchedCombat = declareActionHigherIni(declaredActionLowerIni, {
@@ -208,10 +209,13 @@ describe("Combat", () => {
     );
     expect(patchedCombat.turn.currentDecision).toBeUndefined();
     expect(patchedCombat.turn.step).toBe("AttackResolved");
-    // TODO check attack resolved
-    // expect(patchedCombat.events[previousEventsLength + 1]).toEqual({
-    //   event: "AttackResolved",
-    //   data: attackResult
-    // });
+    expect(patchedCombat.turn.attackResult).toEqual(attackResult);
+    expect(patchedCombat.events[previousEventsLength + 1]).toEqual({
+      event: "AttackResolved",
+      data: { attackResult, attacker: attacker.id, defender: defender.id }
+    });
+    expect(health(patchedCombat.turn.defender)).toBe(
+      defenderPreviousHealth - attackResult.damage
+    );
   });
 });

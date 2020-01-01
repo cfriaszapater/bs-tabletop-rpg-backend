@@ -13,6 +13,9 @@ function givenCharacterData(id, ini, reach, agi, int) {
       reach: reach,
       stamina: {
         current: 10
+      },
+      health: {
+        current: 10
       }
     }
   };
