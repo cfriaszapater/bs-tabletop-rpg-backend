@@ -10,25 +10,43 @@ function startCombat(combat) {
   // TODO Assume characters exist in the system (they have been validated before calling startCombat)
 
   const attacker = firstToAct(combat.participants);
-  const startCombatEvents = [
-    { event: "CombatStarted" },
-    {
-      event: "TurnStarted",
-      data: attacker.id
-    }
-  ];
 
+  return startTurn(_startCombat(combat), attacker);
+}
+
+function _startCombat(combat) {
+  return {
+    ...combat,
+    charactersToAct: combat.participants.map(character => character.id),
+    events: [{ event: "CombatStarted" }],
+    pastTurns: []
+  };
+}
+
+function startTurn(combat, attacker) {
+  if (combat.turn) {
+    // Turn after first
+    if (combat.turn.step !== "AttackResolved") {
+      throw "Unexpected step [" + combat.turn.step + "] on startTurn";
+    }
+  }
   return {
     ...combat,
     turn: {
-      attacker: attacker,
+      attacker,
       step: "SelectOpponent",
-      number: 1
+      number: combat.turn ? combat.pastTurns.length + 2 : 1
     },
-    charactersToAct: combat.participants
-      .filter(character => character.id !== attacker.id)
-      .map(character => character.id),
-    events: startCombatEvents
+    charactersToAct: combat.charactersToAct.filter(
+      characterId => characterId !== attacker.id
+    ),
+    events: combat.events.concat([
+      {
+        event: "TurnStarted",
+        data: attacker.id
+      }
+    ]),
+    pastTurns: combat.turn ? combat.pastTurns.concat([combat.turn]) : []
   };
 }
 
@@ -55,9 +73,8 @@ function firstToAct(characters) {
 
 /**
  * Returns:
- * < 0 if c1 acts first
- * 0 if there is a tie
- * > 0 if c2 acts first
+ * &lt; 0 if c1 acts first,
+ * &gt; 0 if c2 acts first
  */
 function actingOrder(c1, c2) {
   // Compare (in order of precedence): Ini, reach, Agi, Int
@@ -77,7 +94,7 @@ function actingOrder(c1, c2) {
     return intDif;
   } else {
     // Note: not implemented the last comparison criterion (max weapon skill level of wielded weapons)
-    return random.getRandomInt(2);
+    return random.getRandomInt(2) === 1 ? 1 : -1;
   }
 }
 
@@ -98,6 +115,7 @@ function selectOpponent(combat, turnPatch /*, userId*/) {
   const defender = combat.participants.find(
     character => character.id === defenderId
   );
+  const attacker = combat.turn.attacker;
 
   const selectOpponentEvents = [
     { event: "OpponentSelected", data: defenderId }
@@ -109,7 +127,8 @@ function selectOpponent(combat, turnPatch /*, userId*/) {
       ...combat.turn,
       defender,
       step: "DecideStaminaLowerIni",
-      currentDecision: "defender"
+      currentDecision:
+        actingOrder(attacker, defender) < 0 ? "defender" : "attacker"
     },
     events: combat.events.concat(selectOpponentEvents)
   };
@@ -141,8 +160,27 @@ function declareActionLowerIni(combat, turnPatch) {
       events: combat.events.concat(declareDefenseEvents)
     };
   } else if (combat.turn.currentDecision === "attacker") {
-    // TODO combat.turn.currentDecision === "attacker"
-    throw "TODO";
+    const { attackerStamina } = turnPatch;
+    if (attackerStamina === undefined) {
+      throw declareActionNoAttackerStamina("declareActionLowerIni");
+    }
+
+    const staminaAmount = attackerStamina.impact + attackerStamina.damage;
+    const attacker = investStamina(combat.turn.attacker, staminaAmount);
+
+    return {
+      ...combat,
+      turn: {
+        ...combat.turn,
+        attackerStamina,
+        step: "DecideStaminaHigherIni",
+        currentDecision: "defender",
+        attacker
+      },
+      events: combat.events.concat([
+        { event: "AttackDeclared", data: attacker.id }
+      ])
+    };
   } else {
     throw "Unexpected combat.turn.currentDecision [" +
       combat.turn.currentDecision +
@@ -160,7 +198,7 @@ function declareActionHigherIni(combat, turnPatch) {
   } else if (combat.turn.currentDecision === "attacker") {
     const { attackerStamina } = turnPatch;
     if (attackerStamina === undefined) {
-      throw declareActionNoAttackerStamina;
+      throw declareActionNoAttackerStamina("declareActionHigherIni");
     }
 
     const staminaAmount = attackerStamina.impact + attackerStamina.damage;
@@ -206,8 +244,8 @@ function declareActionHigherIni(combat, turnPatch) {
   }
 }
 
-const declareActionNoAttackerStamina =
-  "attackerStamina expected on declareActionHigherIni and currentDecision is attacker";
+const declareActionNoAttackerStamina = step =>
+  "attackerStamina expected on [" + step + "] and currentDecision is attacker";
 
 module.exports = {
   startCombat,
@@ -216,5 +254,6 @@ module.exports = {
   selectOpponentNoDefenderError,
   declareActionLowerIni,
   declareActionNoDefenderStamina,
-  declareActionHigherIni
+  declareActionHigherIni,
+  startTurn
 };

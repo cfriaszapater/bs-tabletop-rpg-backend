@@ -5,7 +5,8 @@ const {
   declareActionLowerIni,
   declareActionHigherIni,
   notEnoughParticipantsError,
-  selectOpponentNoDefenderError
+  selectOpponentNoDefenderError,
+  startTurn
 } = require("./combat");
 const { stamina, health } = require("./character");
 const random = require("../util/random");
@@ -84,7 +85,7 @@ describe("Combat", () => {
     }).toThrow(notEnoughParticipantsError);
   });
 
-  it("should start combat", () => {
+  it("should start combat and first turn", () => {
     const actingCharacterId = "C1";
     const combat = {
       participants: [
@@ -105,7 +106,7 @@ describe("Combat", () => {
     });
   });
 
-  it("should set charactersToAct on turn start", () => {
+  it("should set charactersToAct on combat start", () => {
     const combat = {
       participants: [givenCharacterData("C1", 6), givenCharacterData("C2", 5)]
     };
@@ -116,7 +117,7 @@ describe("Combat", () => {
     expect(startedCombat.charactersToAct[0]).toEqual("C2");
   });
 
-  it("should select opponent on started combat", () => {
+  it("should be currentDecision 'defender' on lower ini defender for step DecideStaminaLowerIni", () => {
     const combat = startCombat({
       participants: [givenCharacterData("C1", 6), givenCharacterData("C2", 5)]
     });
@@ -127,6 +128,24 @@ describe("Combat", () => {
     expect(patchedCombat.turn.step).toBe("DecideStaminaLowerIni");
     expect(patchedCombat.turn.number).toBe(1);
     expect(patchedCombat.turn.currentDecision).toBe("defender");
+    expect(patchedCombat.events.length).toBe(combat.events.length + 1);
+    expect(patchedCombat.events[patchedCombat.events.length - 1]).toEqual({
+      event: "OpponentSelected",
+      data: "C2"
+    });
+  });
+
+  it("should be currentDecision 'attacker' on lower ini attacker for step DecideStaminaLowerIni", () => {
+    const combat = startCombat({
+      participants: [givenCharacterData("C1", 3), givenCharacterData("C2", 5)]
+    });
+
+    const patchedCombat = selectOpponent(combat, { defender: "C2" });
+
+    expect(patchedCombat.turn.defender.id).toBe("C2");
+    expect(patchedCombat.turn.step).toBe("DecideStaminaLowerIni");
+    expect(patchedCombat.turn.number).toBe(1);
+    expect(patchedCombat.turn.currentDecision).toBe("attacker");
     expect(patchedCombat.events.length).toBe(combat.events.length + 1);
     expect(patchedCombat.events[patchedCombat.events.length - 1]).toEqual({
       event: "OpponentSelected",
@@ -217,5 +236,93 @@ describe("Combat", () => {
     expect(health(patchedCombat.turn.defender)).toBe(
       defenderPreviousHealth - attackResult.damage
     );
+  });
+
+  it("should start second turn", () => {
+    const attackerInSecondTurn = givenCharacterData("C1", 6);
+    const startedCombat = startCombat({
+      participants: [attackerInSecondTurn, givenCharacterData("C2", 7)]
+    });
+    const firstTurnEnded = {
+      ...startedCombat,
+      turn: { ...startedCombat.turn, step: "AttackResolved" }
+    };
+
+    const secondTurnStarted = startTurn(firstTurnEnded, attackerInSecondTurn);
+
+    expect(secondTurnStarted.turn.step).toBe("SelectOpponent");
+    expect(secondTurnStarted.turn.number).toBe(2);
+    expect(secondTurnStarted.events.length).toBe(
+      firstTurnEnded.events.length + 1
+    );
+    expect(secondTurnStarted.events[firstTurnEnded.events.length]).toEqual({
+      event: "TurnStarted",
+      data: attackerInSecondTurn.id
+    });
+    expect(secondTurnStarted.turn.attacker).toEqual(attackerInSecondTurn);
+  });
+
+  it("should start third turn", () => {
+    const attackerInThirdTurn = givenCharacterData("C1", 6);
+    const startedCombat = startCombat({
+      participants: [
+        attackerInThirdTurn,
+        givenCharacterData("C2", 8),
+        givenCharacterData("C3", 7)
+      ]
+    });
+    const secondTurnEnded = {
+      ...startedCombat,
+      turn: { ...startedCombat.turn, step: "AttackResolved" },
+      pastTurns: [{ ...startedCombat.turn, step: "AttackResolved" }]
+    };
+
+    const thirdTurnStarted = startTurn(secondTurnEnded, attackerInThirdTurn);
+
+    expect(thirdTurnStarted.turn.step).toBe("SelectOpponent");
+    expect(thirdTurnStarted.turn.number).toBe(3);
+    expect(thirdTurnStarted.events.length).toBe(
+      secondTurnEnded.events.length + 1
+    );
+    expect(thirdTurnStarted.events[secondTurnEnded.events.length]).toEqual({
+      event: "TurnStarted",
+      data: attackerInThirdTurn.id
+    });
+    expect(thirdTurnStarted.turn.attacker).toEqual(attackerInThirdTurn);
+  });
+
+  it("should lower ini attacker in second turn declare action after selecting opponent", () => {
+    const attackerInSecondTurn = givenCharacterData("C1", 6);
+    const startedCombat = startCombat({
+      participants: [attackerInSecondTurn, givenCharacterData("C2", 7)]
+    });
+    const firstTurnEnded = {
+      ...startedCombat,
+      turn: { ...startedCombat.turn, step: "AttackResolved" }
+    };
+    const secondTurnStarted = startTurn(firstTurnEnded, attackerInSecondTurn);
+    const opponentSelected = selectOpponent(secondTurnStarted, {
+      defender: "C2"
+    });
+    const attackerPreviousStamina = stamina(attackerInSecondTurn);
+
+    const attackerStamina = { impact: 0, damage: 1 };
+    const patchedCombat = declareActionLowerIni(opponentSelected, {
+      attackerStamina
+    });
+
+    expect(patchedCombat.turn.attackerStamina).toBe(attackerStamina);
+    expect(patchedCombat.events.length).toBe(
+      opponentSelected.events.length + 1
+    );
+    expect(patchedCombat.events[patchedCombat.events.length - 1]).toEqual({
+      event: "AttackDeclared",
+      data: "C1"
+    });
+    expect(stamina(patchedCombat.turn.attacker)).toBe(
+      attackerPreviousStamina - 1
+    );
+    expect(patchedCombat.turn.currentDecision).toBe("defender");
+    expect(patchedCombat.turn.step).toBe("DecideStaminaHigherIni");
   });
 });
