@@ -72,17 +72,6 @@ function enoughParticipants(combat) {
   );
 }
 
-function firstToAct(characters) {
-  const reducer = (actsFirst, current) => {
-    if (actsFirst === undefined || actingOrder(actsFirst, current) > 0) {
-      return current;
-    } else {
-      return actsFirst;
-    }
-  };
-  return characters.reduce(reducer);
-}
-
 /**
  * Returns:
  * &lt; 0 if c1 acts first,
