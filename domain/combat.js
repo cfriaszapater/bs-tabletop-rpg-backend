@@ -7,17 +7,22 @@ function startCombat(combat) {
     throw new Error(notEnoughParticipantsError);
   }
 
+  const startedCombat = _startCombat(combat);
   // TODO Assume characters exist in the system (they have been validated before calling startCombat)
 
-  const attacker = firstToAct(combat.participants);
-
-  return startTurn(_startCombat(combat), attacker);
+  const { charactersToAct, participants } = startedCombat;
+  return startTurn(
+    startedCombat,
+    participants.filter(character => character.id === charactersToAct[0])[0]
+  );
 }
 
 function _startCombat(combat) {
   return {
     ...combat,
-    charactersToAct: combat.participants.map(character => character.id),
+    charactersToAct: combat.participants
+      .sort(actingOrder)
+      .map(character => character.id),
     events: [{ event: "CombatStarted" }],
     pastTurns: []
   };
@@ -29,6 +34,13 @@ function startTurn(combat, attacker) {
     if (combat.turn.step !== "AttackResolved") {
       throw "Unexpected step [" + combat.turn.step + "] on startTurn";
     }
+  }
+  if (combat.charactersToAct[0] !== attacker.id) {
+    throw "Character [" +
+      attacker.id +
+      "] cannot start turn, it is not next to act [" +
+      combat.charactersToAct[0] +
+      "]";
   }
   return {
     ...combat,
@@ -233,6 +245,10 @@ function declareActionHigherIni(combat, turnPatch) {
         defender,
         attackResult
       },
+      charactersToAct: combat.participants
+        .filter(character => combat.charactersToAct.includes(character.id))
+        .sort(actingOrder)
+        .map(character => character.id),
       events: combat.events
         .concat(declareAttackEvents)
         .concat(resolvedAttackEvents)

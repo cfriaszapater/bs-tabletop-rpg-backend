@@ -64,7 +64,7 @@ describe("Combat", () => {
 
     const startedCombat = startCombat(combat);
 
-    expect(startedCombat.turn.attacker).toEqual(character2);
+    expect(startedCombat.turn.attacker).toEqual(character1);
   });
 
   it("should error on combat start with no participants", () => {
@@ -192,10 +192,10 @@ describe("Combat", () => {
   });
 
   it("should higher ini attacker declare action and resolve attack", () => {
-    const defender = givenCharacterData("C2", 5);
+    const defender = givenCharacterData("C2", 4);
     const attacker = givenCharacterData("C1", 6);
     const startedCombat = startCombat({
-      participants: [attacker, defender]
+      participants: [attacker, defender, givenCharacterData("C3", 5)]
     });
     const opponentSelected = selectOpponent(startedCombat, { defender: "C2" });
     const declaredActionLowerIni = declareActionLowerIni(opponentSelected, {
@@ -236,6 +236,7 @@ describe("Combat", () => {
     expect(health(patchedCombat.turn.defender)).toBe(
       defenderPreviousHealth - attackResult.damage
     );
+    expect(patchedCombat.charactersToAct).toEqual(["C3", "C2"]);
   });
 
   it("should start second turn", () => {
@@ -273,6 +274,7 @@ describe("Combat", () => {
     });
     const secondTurnEnded = {
       ...startedCombat,
+      charactersToAct: [attackerInThirdTurn.id],
       turn: { ...startedCombat.turn, step: "AttackResolved" },
       pastTurns: [{ ...startedCombat.turn, step: "AttackResolved" }]
     };
@@ -324,5 +326,33 @@ describe("Combat", () => {
     );
     expect(patchedCombat.turn.currentDecision).toBe("defender");
     expect(patchedCombat.turn.step).toBe("DecideStaminaHigherIni");
+  });
+
+  it("should sort characters to act on resolve attack", () => {
+    const c1 = givenCharacterData("C1", 6);
+    const startedCombat = startCombat({
+      participants: [
+        c1,
+        givenCharacterData("C2", 7),
+        givenCharacterData("C3", 5)
+      ]
+    });
+    expect(startedCombat.charactersToAct).toEqual(["C1", "C3"]);
+    const opponentSelected = selectOpponent(startedCombat, { defender: "C1" });
+    const declaredActionLowerIni = declareActionLowerIni(opponentSelected, {
+      defenderStamina: { dodge: 1, block: 1 }
+    });
+    // Simulate C1 lost initiative
+    declaredActionLowerIni.participants
+      .filter(character => character.id === "C1")
+      .forEach(character => {
+        character.characteristics.initiative.current = 3;
+      });
+
+    const patchedCombat = declareActionHigherIni(declaredActionLowerIni, {
+      attackerStamina: { impact: 1, damage: 1 }
+    });
+
+    expect(patchedCombat.charactersToAct).toEqual(["C3", "C1"]);
   });
 });

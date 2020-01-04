@@ -109,3 +109,29 @@ Feature: Combat
     And response body path $.events[(`eventIndex`+1)].data.attackResult should be `attackResult1`
     And response body path $.turn.step should be AttackResolved
     And response body path $.turn.currentDecision should be null
+
+  Scenario: start next turn after attack resolved
+    Given I pipe contents of file ./features/json/character-c1_post.json to body
+    And I set Content-Type header to application/json
+    And I POST to /characters
+    And I store the value of body path $.id as C1 in scenario scope
+    And I pipe contents of file ./features/json/character-c2_post.json to body
+    And I POST to /characters
+    And I store the value of body path $.id as C2 in scenario scope
+    And I set body to {"participants":["`C1`", "`C2`"]}
+    And I POST to /combats
+    And I store the value of body path $.id as combat1 in scenario scope
+    And I store the value of body path $.turn.number as turn1 in scenario scope
+    And I set body to {"defender": "`C1`"}
+    And I PATCH /combats/`combat1`/turns/`turn1`
+    And I set body to {"defenderStamina": {"Dodge": 1, "Block": 1}}
+    And I PATCH /combats/`combat1`/turns/`turn1`
+    And I store the value of body path $.events.length as eventIndex in scenario scope
+    And I store the value of body path $.turn.defender.characteristics.health.current as previousDefenderHealth in scenario scope
+    And I set body to {"attackerStamina": {"impact": 1, "damage": 1}}
+    And I PATCH /combats/`combat1`/turns/`turn1`
+    And I set body to {"characterId": "`C1`"}
+    When I POST to /combats/`combat1`/turns
+    Then response code should be 200
+    And response body path $.turn.step should be SelectOpponent
+    And response body path $.turn.number should be 2

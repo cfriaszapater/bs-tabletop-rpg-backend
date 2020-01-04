@@ -7,13 +7,15 @@ const {
   createCombat,
   declareAttack,
   listCombatsByUser,
-  turnAction
+  turnAction,
+  startTurn
 } = require("../service/combatService")(combatRepository, characterRepository);
 const { validateNotEmpty } = require("./validateNotEmpty");
 
 router.post("/", postCombat);
 router.get("/", listCombats);
 router.get("/:combatId", getCombat);
+router.post("/:combatId/turns", postTurn);
 router.patch("/:combatId/turns/:turnNumber", patchTurn);
 router.post(
   "/:combatId/turn/attacks/:attackNumber/attackerStamina",
@@ -85,5 +87,19 @@ async function postAttackStamina(req, res, next) {
   } catch (err) {
     next(err);
   }
-  return "TODO return updated turn";
+}
+
+async function postTurn(req, res, next) {
+  const { combatId } = req.params;
+  const { characterId } = req.body;
+  debug("postTurn: ", combatId, characterId);
+
+  try {
+    validateNotEmpty(characterId);
+    var combat = await startTurn(combatId, characterId /*, req.user.sub*/);
+    res.status(200).json(combat);
+    debug("postTurn result: ", JSON.stringify(combat));
+  } catch (err) {
+    next(err);
+  }
 }
