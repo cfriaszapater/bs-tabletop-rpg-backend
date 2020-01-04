@@ -8,7 +8,6 @@ function startCombat(combat) {
   }
 
   const startedCombat = _startCombat(combat);
-  // TODO Assume characters exist in the system (they have been validated before calling startCombat)
 
   const { charactersToAct, participants } = startedCombat;
   return startTurn(
