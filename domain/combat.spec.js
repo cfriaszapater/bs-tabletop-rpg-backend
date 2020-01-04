@@ -239,6 +239,65 @@ describe("Combat", () => {
     expect(patchedCombat.charactersToAct).toEqual(["C3", "C2"]);
   });
 
+  it("should higher ini defender on second turn declare action and resolve attack", () => {
+    const attackerInSecondTurn = givenCharacterData("C1", 6);
+    const defenderInSecondTurn = givenCharacterData("C2", 13);
+    const startedCombat = startCombat({
+      participants: [attackerInSecondTurn, defenderInSecondTurn]
+    });
+    const firstTurnEnded = {
+      ...startedCombat,
+      turn: { ...startedCombat.turn, step: "AttackResolved" }
+    };
+    const secondTurnStarted = startTurn(firstTurnEnded, attackerInSecondTurn);
+    const opponentSelected = selectOpponent(secondTurnStarted, {
+      defender: "C2"
+    });
+    const declaredActionLowerIni = declareActionLowerIni(opponentSelected, {
+      attackerStamina: { impact: 0, damage: 0 }
+    });
+    const defenderPreviousStamina = stamina(defenderInSecondTurn);
+    const previousEventsLength = declaredActionLowerIni.events.length;
+    const attackResult = {
+      hit: false,
+      damage: 0,
+      coverageDamage: 0,
+      stunned: 0
+    };
+    attack.resolveAttack.mockReturnValue(attackResult);
+    const defenderPreviousHealth = health(defenderInSecondTurn);
+
+    const defenderStamina = { dodge: 1, block: 1 };
+    const patchedCombat = declareActionHigherIni(declaredActionLowerIni, {
+      defenderStamina
+    });
+
+    expect(patchedCombat.turn.defenderStamina).toBe(defenderStamina);
+    expect(patchedCombat.events.length).toBeGreaterThan(previousEventsLength);
+    expect(patchedCombat.events[previousEventsLength]).toEqual({
+      event: "DefenseDeclared",
+      data: "C2"
+    });
+    expect(stamina(patchedCombat.turn.defender)).toBe(
+      defenderPreviousStamina - 2
+    );
+    expect(patchedCombat.turn.currentDecision).toBeUndefined();
+    expect(patchedCombat.turn.step).toBe("AttackResolved");
+    expect(patchedCombat.turn.attackResult).toEqual(attackResult);
+    expect(patchedCombat.events[previousEventsLength + 1]).toEqual({
+      event: "AttackResolved",
+      data: {
+        attackResult,
+        attacker: attackerInSecondTurn.id,
+        defender: defenderInSecondTurn.id
+      }
+    });
+    expect(health(patchedCombat.turn.defender)).toBe(
+      defenderPreviousHealth - attackResult.damage
+    );
+    expect(patchedCombat.charactersToAct).toEqual([]);
+  });
+
   it("should start second turn", () => {
     const attackerInSecondTurn = givenCharacterData("C1", 6);
     const startedCombat = startCombat({
