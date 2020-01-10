@@ -111,7 +111,7 @@ function declareActionLowerIni(combat, turnPatch) {
   if (combat.turn.currentDecision === "defender") {
     const { defenderStamina } = turnPatch;
     if (defenderStamina === undefined) {
-      throw declareActionNoDefenderStamina;
+      throw declareActionNoDefenderStamina("declareActionLowerIni");
     }
 
     const staminaAmount = defenderStamina.block + defenderStamina.dodge;
@@ -161,13 +161,59 @@ function declareActionLowerIni(combat, turnPatch) {
   }
 }
 
-const declareActionNoDefenderStamina =
-  "defenderStamina expected on declareActionLowerIni and currentDecision is defender";
+const declareActionNoDefenderStamina = step =>
+  "defenderStamina expected on [" + step + "] and currentDecision is defender";
 
 function declareActionHigherIni(combat, turnPatch) {
   if (combat.turn.currentDecision === "defender") {
-    // TODO combat.turn.currentDecision === "defender"
-    throw "TODO";
+    const { defenderStamina } = turnPatch;
+    if (defenderStamina === undefined) {
+      throw declareActionNoDefenderStamina("declareActionHigherIni");
+    }
+
+    const staminaAmount = defenderStamina.dodge + defenderStamina.block;
+    const defender = investStamina(combat.turn.defender, staminaAmount);
+
+    const declareDefenseEvents = [
+      { event: "DefenseDeclared", data: combat.turn.defender.id }
+    ];
+
+    const turn = {
+      ...combat.turn,
+      defenderStamina
+    };
+    const clashResult = resolveAttack(turn);
+
+    const defenderAfterClash = sufferConsequences(defender, clashResult);
+
+    const resolvedClashEvents = [
+      {
+        event: "AttackResolved",
+        data: {
+          attackResult: clashResult,
+          attacker: combat.turn.attacker.id,
+          defender: defender.id
+        }
+      }
+    ];
+
+    return {
+      ...combat,
+      turn: {
+        ...turn,
+        step: "AttackResolved",
+        currentDecision: undefined,
+        defender: defenderAfterClash,
+        attackResult: clashResult
+      },
+      charactersToAct: combat.participants
+        .filter(character => combat.charactersToAct.includes(character.id))
+        .sort(actingOrder)
+        .map(character => character.id),
+      events: combat.events
+        .concat(declareDefenseEvents)
+        .concat(resolvedClashEvents)
+    };
   } else if (combat.turn.currentDecision === "attacker") {
     const { attackerStamina } = turnPatch;
     if (attackerStamina === undefined) {
