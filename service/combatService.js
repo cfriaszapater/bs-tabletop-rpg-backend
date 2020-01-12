@@ -79,9 +79,7 @@ async function loadParticipants(combat, characterRepository) {
   return {
     ...combat,
     participants: await Promise.all(
-      combat.participants.map(characterId =>
-        characterRepository.findById(characterId)
-      )
+      combat.participants.map(characterRepository.findById)
     )
   };
 }
