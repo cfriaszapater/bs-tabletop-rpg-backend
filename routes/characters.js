@@ -18,10 +18,6 @@ module.exports = router;
 async function postCharacter(req, res, next) {
   debug("postCharacter", req.body, req.headers);
 
-  if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
-    return next(createError(400, "Body must not be empty"));
-  }
-
   try {
     var character = await createCharacter(req.body /*, req.user.sub*/);
     res.status(201).json(character);
