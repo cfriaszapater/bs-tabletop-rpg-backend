@@ -19,7 +19,6 @@ app.use("/", indexRouter);
 app.use("/combats", combatRouter);
 app.use("/characters", characterRouter);
 
-// Catch 404 and forward to error handler
 app.use(notFoundError);
 
 app.use(errorHandler);
@@ -34,6 +33,7 @@ function cors(req, res, next) {
   next();
 }
 
+// Catch 404 and forward to error handler
 function notFoundError(req, res, next) {
   next(createError(404));
 }
