@@ -135,3 +135,11 @@ Feature: Combat
     Then response code should be 200
     And response body path $.turn.step should be SelectOpponent
     And response body path $.turn.number should be 2
+
+  @unhappy
+  Scenario: error - 400 empty body on create combat
+    Given I set Content-Type header to application/json
+    When I POST to /combats
+    Then response code should be 400
+    And response body should be valid json
+    And response body path $.message should be Body must not be empty

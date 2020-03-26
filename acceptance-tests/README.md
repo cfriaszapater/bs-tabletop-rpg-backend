@@ -10,10 +10,10 @@ npm install
 
 ## Run
 
-Run against dest env (only localhost in this case):
+Run against dest env (just localhost as dev env in this case):
 
 ```sh
-npm run test
+npm test
 ```
 
 ## Debug
