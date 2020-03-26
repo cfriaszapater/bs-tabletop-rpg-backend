@@ -41,7 +41,7 @@ function notFoundError(req, res, next) {
 // Express requires error handling middleware to keep the 4-arg signature, even if 'next' arg is not used
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
-  res.status(err.status || 500).json(err);
+  res.status(err.status || 500).json({ message: err.message });
 }
 
 module.exports = app;
