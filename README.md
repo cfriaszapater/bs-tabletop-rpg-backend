@@ -50,6 +50,10 @@ npm start
 npm run debug
 ```
 
+### Acceptance tests
+
+See [acceptance-tests](./acceptance-tests/README.md).
+
 ### Deploy to production
 
 This is what I used to deploy to production (having an heroku account and git heroku remote set to point to it):
