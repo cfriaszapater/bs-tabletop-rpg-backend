@@ -47,7 +47,7 @@ function errorHandler(err, req, res, next) {
     status = 400;
   }
 
-  const httpErr = { title: err.message, status: status.toString(), ...err };
+  const httpErr = { title: err.message, status: "" + status, ...err };
   res.status(status).json({ errors: [httpErr] });
 }
 
