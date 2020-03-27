@@ -4,8 +4,8 @@ const {
   selectOpponent,
   declareActionLowerIni,
   declareActionHigherIni,
-  notEnoughParticipantsError,
-  selectOpponentNoDefenderError,
+  NotEnoughParticipantsError,
+  SelectOpponentNoDefenderError,
   startTurn
 } = require("./combat");
 const { stamina, health } = require("./character");
@@ -70,19 +70,19 @@ describe("Combat", () => {
   it("should error on combat start with no participants", () => {
     expect(() => {
       startCombat({});
-    }).toThrow("2 participant");
+    }).toThrow(NotEnoughParticipantsError);
 
     expect(() => {
       startCombat({ participants: undefined });
-    }).toThrow(notEnoughParticipantsError);
+    }).toThrow(NotEnoughParticipantsError);
 
     expect(() => {
       startCombat({ participants: [] });
-    }).toThrow(notEnoughParticipantsError);
+    }).toThrow(NotEnoughParticipantsError);
 
     expect(() => {
       startCombat({ participants: [givenCharacterData("jarl", 1)] });
-    }).toThrow(notEnoughParticipantsError);
+    }).toThrow(NotEnoughParticipantsError);
   });
 
   it("should start combat and first turn", () => {
@@ -160,7 +160,7 @@ describe("Combat", () => {
 
     expect(() => {
       selectOpponent(combat, { jarl: "C2" });
-    }).toThrow(selectOpponentNoDefenderError);
+    }).toThrow(SelectOpponentNoDefenderError);
   });
 
   it("should lower ini defender declare action on higher ini attacker selected opponent", () => {

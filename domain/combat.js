@@ -1,10 +1,12 @@
+const { ClientError } = require("./ClientError");
+
 const { resolveAttack } = require("./attack");
 const { investStamina, sufferConsequences } = require("./character");
 const { actingOrder } = require("./initiative");
 
 function startCombat(combat) {
   if (!enoughParticipants(combat)) {
-    throw new Error(notEnoughParticipantsError);
+    throw new NotEnoughParticipantsError();
   }
 
   const startedCombat = _startCombat(combat);
@@ -31,15 +33,19 @@ function startTurn(combat, attacker) {
   if (combat.turn) {
     // Turn after first
     if (combat.turn.step !== "AttackResolved") {
-      throw "Unexpected step [" + combat.turn.step + "] on startTurn";
+      throw new ClientError(
+        "Unexpected step [" + combat.turn.step + "] on startTurn"
+      );
     }
   }
   if (combat.charactersToAct[0] !== attacker.id) {
-    throw "Character [" +
-      attacker.id +
-      "] cannot start turn, it is not next to act [" +
-      combat.charactersToAct[0] +
-      "]";
+    throw new ClientError(
+      "Character [" +
+        attacker.id +
+        "] cannot start turn, it is not next to act [" +
+        combat.charactersToAct[0] +
+        "]"
+    );
   }
   return {
     ...combat,
@@ -61,8 +67,12 @@ function startTurn(combat, attacker) {
   };
 }
 
-const notEnoughParticipantsError =
-  "There should be at least 2 participants to start combat";
+class NotEnoughParticipantsError extends ClientError {
+  constructor() {
+    super("There should be at least 2 participants to start combat");
+    this.name = "NotEnoughParticipantsError";
+  }
+}
 
 function enoughParticipants(combat) {
   return (
@@ -71,10 +81,15 @@ function enoughParticipants(combat) {
   );
 }
 
-const selectOpponentNoDefenderError = "defender expected on selectOpponent";
+class SelectOpponentNoDefenderError extends ClientError {
+  constructor() {
+    super("defender expected on selectOpponent");
+    this.name = "SelectOpponentNoDefenderError";
+  }
+}
 
 function selectOpponent(combat, turnPatch /*, userId*/) {
-  // if (combat.turn.attacker.user !== userId) {
+  // XXX if (combat.turn.attacker.user !== userId) {
   //   throw "User " +
   //     userId +
   //     " not allowed to select opponent at this turn step " +
@@ -82,7 +97,7 @@ function selectOpponent(combat, turnPatch /*, userId*/) {
   // }
   const defenderId = turnPatch.defender;
   if (defenderId === undefined) {
-    throw selectOpponentNoDefenderError;
+    throw new SelectOpponentNoDefenderError();
   }
 
   const defender = combat.participants.find(
@@ -111,7 +126,9 @@ function declareActionLowerIni(combat, turnPatch) {
   if (combat.turn.currentDecision === "defender") {
     const { defenderStamina } = turnPatch;
     if (defenderStamina === undefined) {
-      throw declareActionNoDefenderStamina("declareActionLowerIni");
+      throw new ClientError(
+        declareActionNoDefenderStamina("declareActionLowerIni")
+      );
     }
 
     const staminaAmount = defenderStamina.block + defenderStamina.dodge;
@@ -135,7 +152,9 @@ function declareActionLowerIni(combat, turnPatch) {
   } else if (combat.turn.currentDecision === "attacker") {
     const { attackerStamina } = turnPatch;
     if (attackerStamina === undefined) {
-      throw declareActionNoAttackerStamina("declareActionLowerIni");
+      throw new ClientError(
+        declareActionNoAttackerStamina("declareActionLowerIni")
+      );
     }
 
     const staminaAmount = attackerStamina.impact + attackerStamina.damage;
@@ -155,9 +174,11 @@ function declareActionLowerIni(combat, turnPatch) {
       ])
     };
   } else {
-    throw "Unexpected combat.turn.currentDecision [" +
-      combat.turn.currentDecision +
-      "]";
+    throw new ClientError(
+      "Unexpected combat.turn.currentDecision [" +
+        combat.turn.currentDecision +
+        "]"
+    );
   }
 }
 
@@ -168,7 +189,9 @@ function declareActionHigherIni(combat, turnPatch) {
   if (combat.turn.currentDecision === "defender") {
     const { defenderStamina } = turnPatch;
     if (defenderStamina === undefined) {
-      throw declareActionNoDefenderStamina("declareActionHigherIni");
+      throw new ClientError(
+        declareActionNoDefenderStamina("declareActionHigherIni")
+      );
     }
 
     const staminaAmount = defenderStamina.dodge + defenderStamina.block;
@@ -217,7 +240,9 @@ function declareActionHigherIni(combat, turnPatch) {
   } else if (combat.turn.currentDecision === "attacker") {
     const { attackerStamina } = turnPatch;
     if (attackerStamina === undefined) {
-      throw declareActionNoAttackerStamina("declareActionHigherIni");
+      throw new ClientError(
+        declareActionNoAttackerStamina("declareActionHigherIni")
+      );
     }
 
     const staminaAmount = attackerStamina.impact + attackerStamina.damage;
@@ -261,9 +286,11 @@ function declareActionHigherIni(combat, turnPatch) {
         .concat(resolvedAttackEvents)
     };
   } else {
-    throw "Unexpected combat.turn.currentDecision [" +
-      combat.turn.currentDecision +
-      "]";
+    throw new ClientError(
+      "Unexpected combat.turn.currentDecision [" +
+        combat.turn.currentDecision +
+        "]"
+    );
   }
 }
 
@@ -272,9 +299,9 @@ const declareActionNoAttackerStamina = step =>
 
 module.exports = {
   startCombat,
-  notEnoughParticipantsError,
+  NotEnoughParticipantsError,
   selectOpponent,
-  selectOpponentNoDefenderError,
+  SelectOpponentNoDefenderError,
   declareActionLowerIni,
   declareActionNoDefenderStamina,
   declareActionHigherIni,

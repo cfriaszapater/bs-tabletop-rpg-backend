@@ -1,10 +1,17 @@
 const { isEmptyObject } = require("../util/isEmptyObject");
-
-var createError = require("http-errors");
+const { ClientError } = require("../domain/ClientError");
 
 function validateNotEmpty(body) {
   if (isEmptyObject(body)) {
-    throw createError(400, "Body must not be empty");
+    throw new EmptyBodyError();
+  }
+}
+
+class EmptyBodyError extends ClientError {
+  constructor() {
+    super("Body must not be empty");
+    this.code = "EMPTYBODY";
+    this.name = "EmptyBodyError";
   }
 }
 

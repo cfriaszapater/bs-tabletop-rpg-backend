@@ -142,4 +142,7 @@ Feature: Combat
     When I POST to /combats
     Then response code should be 400
     And response body should be valid json
-    And response body path $.message should be Body must not be empty
+    And response body path $.errors should be of type array with length 1
+    And response body path $.errors[0].code should be EMPTYBODY
+    And response body path $.errors[0].title should not be null
+    And response body path $.errors[0].status should be 400

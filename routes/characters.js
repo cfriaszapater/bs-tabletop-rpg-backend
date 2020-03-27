@@ -7,7 +7,6 @@ const {
   getCharacterById,
   listCharactersByUser
 } = require("../service/characterService")(characterRepository);
-var createError = require("http-errors");
 
 router.get("/", listCharacters);
 router.get("/:characterId", getCharacter);

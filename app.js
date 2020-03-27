@@ -1,13 +1,14 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var httpLogger = require("morgan");
+const createError = require("http-errors");
+const express = require("express");
+const path = require("path");
+const httpLogger = require("morgan");
 
-var indexRouter = require("./routes/index");
-var combatRouter = require("./routes/combats");
-var characterRouter = require("./routes/characters");
+const indexRouter = require("./routes/index");
+const combatRouter = require("./routes/combats");
+const characterRouter = require("./routes/characters");
+const { ClientError } = require("./domain/ClientError");
 
-var app = express();
+const app = express();
 
 app.use(cors);
 // Log HTTP requests (with dev info while we are in development mode)
@@ -41,7 +42,13 @@ function notFoundError(req, res, next) {
 // Express requires error handling middleware to keep the 4-arg signature, even if 'next' arg is not used
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
-  res.status(err.status || 500).json({ message: err.message });
+  let status = 500;
+  if (err instanceof ClientError) {
+    status = 400;
+  }
+
+  const httpErr = { title: err.message, status: status.toString(), ...err };
+  res.status(status).json({ errors: [httpErr] });
 }
 
 module.exports = app;
