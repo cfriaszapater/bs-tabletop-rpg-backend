@@ -6,6 +6,8 @@ const {
   declareActionHigherIni,
   startTurn
 } = require("../domain/combat");
+const { ClientError } = require("../domain/ClientError");
+const { ServerError } = require("./ServerError");
 
 module.exports = (combatRepository, characterRepository) => ({
   createCombat: async (combat, userId) => {
@@ -29,11 +31,13 @@ module.exports = (combatRepository, characterRepository) => ({
   turnAction: async (combatId, turnNumber, turnPatch, userId) => {
     const combat = await combatRepository.findById(combatId);
     if (combat.turn.number !== turnNumber) {
-      throw "Turn [" +
-        turnNumber +
-        "] does not match the current turn [" +
-        combat.turn.number +
-        "]";
+      throw new ClientError(
+        "Turn [" +
+          turnNumber +
+          "] does not match the current turn [" +
+          combat.turn.number +
+          "]"
+      );
     }
     if (combat.turn.step === "SelectOpponent") {
       const patchedCombat = selectOpponent(combat, turnPatch, userId);
@@ -45,7 +49,9 @@ module.exports = (combatRepository, characterRepository) => ({
       const patchedCombat = declareActionHigherIni(combat, turnPatch, userId);
       return await save(patchedCombat, characterRepository, combatRepository);
     } else {
-      throw "Unexpected combat.turn.step [" + combat.turn.step + "]";
+      throw new ServerError(
+        "Unexpected combat.turn.step [" + combat.turn.step + "]"
+      );
     }
   },
 
@@ -56,9 +62,11 @@ module.exports = (combatRepository, characterRepository) => ({
       const patchedCombat = startTurn(combat, character);
       return await combatRepository.save(patchedCombat);
     } else {
-      throw "Unexpected combat.turn.step [" +
-        combat.turn.step +
-        "], should be AttackResolved for startTurn";
+      throw new ServerError(
+        "Unexpected combat.turn.step [" +
+          combat.turn.step +
+          "], should be AttackResolved for startTurn"
+      );
     }
   },
 
