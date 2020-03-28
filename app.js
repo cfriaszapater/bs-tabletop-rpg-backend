@@ -1,13 +1,13 @@
-const { handleError } = require("./routes/handleError");
+const { handleError } = require("./controller/handleError");
 
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
 const httpLogger = require("morgan");
 
-const indexRouter = require("./routes/index");
-const combatRouter = require("./routes/combats");
-const characterRouter = require("./routes/characters");
+const indexRouter = require("./controller/index");
+const combatRouter = require("./controller/combats");
+const characterRouter = require("./controller/characters");
 
 const app = express();
 
