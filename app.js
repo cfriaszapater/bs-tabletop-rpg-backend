@@ -1,3 +1,5 @@
+const { handleError } = require("./routes/handleError");
+
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
@@ -6,7 +8,6 @@ const httpLogger = require("morgan");
 const indexRouter = require("./routes/index");
 const combatRouter = require("./routes/combats");
 const characterRouter = require("./routes/characters");
-const { ClientError } = require("./domain/ClientError");
 
 const app = express();
 
@@ -42,20 +43,9 @@ function notFoundError(req, res, next) {
 // Express requires error handling middleware to keep the 4-arg signature, even if 'next' arg is not used
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
-  let status = 500;
-  if (err instanceof ClientError) {
-    status = 400;
-  }
+  const { status, responseBody } = handleError(err);
 
-  // Pull specific Error properties that are not included by JSON.stringify as they are not enumerable
-  // (see https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify)
-  const httpErr = {
-    title: err.message,
-    status: "" + status,
-    stack: err.stack,
-    ...err
-  };
-  res.status(status).json({ errors: [httpErr] });
+  res.status(status).json(responseBody);
 }
 
 module.exports = app;
