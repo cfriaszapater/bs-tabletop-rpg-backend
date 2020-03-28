@@ -1,4 +1,4 @@
-const { ClientError } = require("../domain/ClientError");
+const { BadRequestError } = require("../domain/BadRequestError");
 
 function handleError(err) {
   const status = errorStatus(err);
@@ -6,7 +6,12 @@ function handleError(err) {
   return { status, responseBody };
 }
 
-exports.handleError = handleError;
+function errorStatus(err) {
+  if (err instanceof BadRequestError) {
+    return 400;
+  }
+  return 500;
+}
 
 function errorResponseBody(err, status) {
   // Pull specific Error properties that are not included by JSON.stringify as they are not enumerable
@@ -22,9 +27,4 @@ function errorResponseBody(err, status) {
   return responseBody;
 }
 
-function errorStatus(err) {
-  if (err instanceof ClientError) {
-    return 400;
-  }
-  return 500;
-}
+exports.handleError = handleError;

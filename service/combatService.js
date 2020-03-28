@@ -6,8 +6,8 @@ const {
   declareActionHigherIni,
   startTurn
 } = require("../domain/combat");
-const { ClientError } = require("../domain/ClientError");
-const { ServerError } = require("./ServerError");
+const { BadRequestError } = require("../domain/BadRequestError");
+const { UnexpectedError } = require("../domain/UnexpectedError");
 
 module.exports = (combatRepository, characterRepository) => ({
   createCombat: async (combat, userId) => {
@@ -31,7 +31,7 @@ module.exports = (combatRepository, characterRepository) => ({
   turnAction: async (combatId, turnNumber, turnPatch, userId) => {
     const combat = await combatRepository.findById(combatId);
     if (combat.turn.number !== turnNumber) {
-      throw new ClientError(
+      throw new BadRequestError(
         "Turn [" +
           turnNumber +
           "] does not match the current turn [" +
@@ -49,7 +49,7 @@ module.exports = (combatRepository, characterRepository) => ({
       const patchedCombat = declareActionHigherIni(combat, turnPatch, userId);
       return await save(patchedCombat, characterRepository, combatRepository);
     } else {
-      throw new ServerError(
+      throw new UnexpectedError(
         "Unexpected combat.turn.step [" + combat.turn.step + "]"
       );
     }
@@ -62,7 +62,7 @@ module.exports = (combatRepository, characterRepository) => ({
       const patchedCombat = startTurn(combat, character);
       return await combatRepository.save(patchedCombat);
     } else {
-      throw new ServerError(
+      throw new UnexpectedError(
         "Unexpected combat.turn.step [" +
           combat.turn.step +
           "], should be AttackResolved for startTurn"

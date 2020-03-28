@@ -1,5 +1,5 @@
-const { ClientError } = require("./ClientError");
-
+const { BadRequestError } = require("./BadRequestError");
+const { UnexpectedError } = require("./UnexpectedError");
 const { resolveAttack } = require("./attack");
 const { investStamina, sufferConsequences } = require("./character");
 const { actingOrder } = require("./initiative");
@@ -31,15 +31,20 @@ function _startCombat(combat) {
 
 function startTurn(combat, attacker) {
   if (combat.turn) {
+    const expectedStep = "AttackResolved";
     // Turn after first
-    if (combat.turn.step !== "AttackResolved") {
-      throw new ClientError(
-        "Unexpected step [" + combat.turn.step + "] on startTurn"
+    if (combat.turn.step !== expectedStep) {
+      throw new BadRequestError(
+        "startTurn only allowed on turn step [" +
+          expectedStep +
+          "], was [" +
+          combat.turn.step +
+          "]"
       );
     }
   }
   if (combat.charactersToAct[0] !== attacker.id) {
-    throw new ClientError(
+    throw new BadRequestError(
       "Character [" +
         attacker.id +
         "] cannot start turn, it is not next to act [" +
@@ -67,7 +72,7 @@ function startTurn(combat, attacker) {
   };
 }
 
-class NotEnoughParticipantsError extends ClientError {
+class NotEnoughParticipantsError extends BadRequestError {
   constructor() {
     super("There should be at least 2 participants to start combat");
     this.name = "NotEnoughParticipantsError";
@@ -81,7 +86,7 @@ function enoughParticipants(combat) {
   );
 }
 
-class SelectOpponentNoDefenderError extends ClientError {
+class SelectOpponentNoDefenderError extends BadRequestError {
   constructor() {
     super("defender expected on selectOpponent");
     this.name = "SelectOpponentNoDefenderError";
@@ -126,7 +131,7 @@ function declareActionLowerIni(combat, turnPatch) {
   if (combat.turn.currentDecision === "defender") {
     const { defenderStamina } = turnPatch;
     if (defenderStamina === undefined) {
-      throw new ClientError(
+      throw new BadRequestError(
         declareActionNoDefenderStamina("declareActionLowerIni")
       );
     }
@@ -152,7 +157,7 @@ function declareActionLowerIni(combat, turnPatch) {
   } else if (combat.turn.currentDecision === "attacker") {
     const { attackerStamina } = turnPatch;
     if (attackerStamina === undefined) {
-      throw new ClientError(
+      throw new BadRequestError(
         declareActionNoAttackerStamina("declareActionLowerIni")
       );
     }
@@ -174,7 +179,7 @@ function declareActionLowerIni(combat, turnPatch) {
       ])
     };
   } else {
-    throw new ClientError(
+    throw new UnexpectedError(
       "Unexpected combat.turn.currentDecision [" +
         combat.turn.currentDecision +
         "]"
@@ -189,7 +194,7 @@ function declareActionHigherIni(combat, turnPatch) {
   if (combat.turn.currentDecision === "defender") {
     const { defenderStamina } = turnPatch;
     if (defenderStamina === undefined) {
-      throw new ClientError(
+      throw new BadRequestError(
         declareActionNoDefenderStamina("declareActionHigherIni")
       );
     }
@@ -240,7 +245,7 @@ function declareActionHigherIni(combat, turnPatch) {
   } else if (combat.turn.currentDecision === "attacker") {
     const { attackerStamina } = turnPatch;
     if (attackerStamina === undefined) {
-      throw new ClientError(
+      throw new BadRequestError(
         declareActionNoAttackerStamina("declareActionHigherIni")
       );
     }
@@ -286,7 +291,7 @@ function declareActionHigherIni(combat, turnPatch) {
         .concat(resolvedAttackEvents)
     };
   } else {
-    throw new ClientError(
+    throw new UnexpectedError(
       "Unexpected combat.turn.currentDecision [" +
         combat.turn.currentDecision +
         "]"
