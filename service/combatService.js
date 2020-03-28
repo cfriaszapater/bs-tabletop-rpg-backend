@@ -58,16 +58,10 @@ module.exports = (combatRepository, characterRepository) => ({
   startTurn: async (combatId, characterId) => {
     const combat = await combatRepository.findById(combatId);
     const character = await characterRepository.findById(characterId);
-    if (combat.turn.step === "AttackResolved") {
-      const patchedCombat = startTurn(combat, character);
-      return await combatRepository.save(patchedCombat);
-    } else {
-      throw new UnexpectedError(
-        "Unexpected combat.turn.step [" +
-          combat.turn.step +
-          "], should be AttackResolved for startTurn"
-      );
-    }
+
+    const patchedCombat = startTurn(combat, character);
+
+    return await combatRepository.save(patchedCombat);
   },
 
   listCombatsByUser: async userId => {
