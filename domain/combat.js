@@ -31,8 +31,8 @@ function _startCombat(combat) {
 
 function startTurn(combat, attacker) {
   if (combat.turn) {
-    const expectedStep = "AttackResolved";
     // Turn after first
+    const expectedStep = "AttackResolved";
     if (combat.turn.step !== expectedStep) {
       throw new BadRequestError(
         "startTurn only allowed on turn step [" +
