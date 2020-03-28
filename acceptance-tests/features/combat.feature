@@ -146,3 +146,4 @@ Feature: Combat
     And response body path $.errors[0].code should be EMPTYBODY
     And response body path $.errors[0].title should not be null
     And response body path $.errors[0].status should be 400
+    And response body path $.errors[0].stack should not be null

@@ -47,7 +47,14 @@ function errorHandler(err, req, res, next) {
     status = 400;
   }
 
-  const httpErr = { title: err.message, status: "" + status, ...err };
+  // Pull specific Error properties that are not included by JSON.stringify as they are not enumerable
+  // (see https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify)
+  const httpErr = {
+    title: err.message,
+    status: "" + status,
+    stack: err.stack,
+    ...err
+  };
   res.status(status).json({ errors: [httpErr] });
 }
 
