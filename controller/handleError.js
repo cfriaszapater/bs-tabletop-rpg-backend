@@ -1,4 +1,4 @@
-const { BadRequestError } = require("../domain/BadRequestError");
+const { BadRequestError } = require("../domain/error/BadRequestError");
 
 function handleError(err) {
   const status = errorStatus(err);
@@ -23,8 +23,7 @@ function errorResponseBody(err, status) {
     stack: err.stack,
     ...err
   };
-  const responseBody = { errors: [httpErr] };
-  return responseBody;
+  return { errors: [httpErr] };
 }
 
 exports.handleError = handleError;

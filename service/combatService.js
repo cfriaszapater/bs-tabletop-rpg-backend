@@ -6,8 +6,8 @@ const {
   declareActionHigherIni,
   startTurn
 } = require("../domain/combat");
-const { BadRequestError } = require("../domain/BadRequestError");
-const { UnexpectedError } = require("../domain/UnexpectedError");
+const { BadRequestError } = require("../domain/error/BadRequestError");
+const { UnexpectedError } = require("../domain/error/UnexpectedError");
 
 module.exports = (combatRepository, characterRepository) => ({
   createCombat: async (combat, userId) => {

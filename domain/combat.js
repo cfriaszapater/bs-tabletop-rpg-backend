@@ -1,5 +1,5 @@
-const { BadRequestError } = require("./BadRequestError");
-const { UnexpectedError } = require("./UnexpectedError");
+const { BadRequestError } = require("./error/BadRequestError");
+const { UnexpectedError } = require("./error/UnexpectedError");
 const { resolveAttack } = require("./attack");
 const { investStamina, sufferConsequences } = require("./character");
 const { actingOrder } = require("./initiative");
