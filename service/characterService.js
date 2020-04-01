@@ -1,6 +1,7 @@
 const debug = require("debug")("bs-tabletop-rpg-backend:service:character");
 const uuidv4 = require("uuid/v4");
 const { isEmptyObject } = require("../util/isEmptyObject");
+const { emptyCharacter } = require("../domain/character");
 
 module.exports = characterRepository => ({
   createCharacter: async (character, userId) => {
@@ -24,19 +25,3 @@ module.exports = characterRepository => ({
     return characterRepository.listByUser(userId);
   }
 });
-
-function emptyCharacter() {
-  return {
-    attributes: {
-      endurance: 0,
-      agility: 0,
-      strength: 0,
-      will: 0,
-      intelligence: 0,
-      leadership: 0,
-      power: 0,
-      defense: 0,
-      extension: 0
-    }
-  };
-}

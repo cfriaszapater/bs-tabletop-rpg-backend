@@ -90,6 +90,48 @@ function sufferConsequences(character, attackResult) {
   };
 }
 
+function emptyCharacter() {
+  return {
+    attributes: {
+      endurance: 0,
+      agility: 0,
+      strength: 0,
+      will: 0,
+      intelligence: 0,
+      leadership: 0,
+      power: 0,
+      defense: 0,
+      extension: 0
+    },
+    characteristics: {
+      initiative: {
+        current: 0,
+        max: 0
+      },
+      stamina: {
+        current: 0,
+        max: 0
+      },
+      impact: 0,
+      damage: 0,
+      health: {
+        current: 0,
+        max: 0
+      },
+      dodge: 0,
+      coverage: {
+        current: 0,
+        max: 0
+      },
+      blunt: 0,
+      cut: 0,
+      penetrating: 0,
+      reach: 0
+    },
+    equipment: { equipped: {}, carried: [] }
+  };
+}
+
 module.exports = {
   stamina,
   health,
@@ -100,5 +142,6 @@ module.exports = {
   resolveDamage,
   resolveBlock,
   impactRunes,
-  will
+  will,
+  emptyCharacter
 };
