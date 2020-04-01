@@ -18,6 +18,9 @@ module.exports = characterRepository => ({
 
   updateCharacter: async (character, userId) => {
     debug("updating character " + JSON.stringify(character));
+
+    // TODO calc characteristics
+
     return await characterRepository.save(character);
   },
   getCharacterById: async (id, userId) => {

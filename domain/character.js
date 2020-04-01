@@ -92,43 +92,141 @@ function sufferConsequences(character, attackResult) {
 
 function emptyCharacter() {
   return {
+    name: "The Nameless One",
+    // XXX stub initial attributes until calc characteristics is done
     attributes: {
-      endurance: 0,
-      agility: 0,
-      strength: 0,
-      will: 0,
-      intelligence: 0,
-      leadership: 0,
-      power: 0,
-      defense: 0,
-      extension: 0
+      endurance: 2,
+      agility: 2,
+      strength: 3,
+      will: 3,
+      intelligence: 2,
+      leadership: 2,
+      power: 2,
+      defense: 2,
+      extension: 1
     },
+    // XXX fixed characteristics until calc characteristics is done
     characteristics: {
       initiative: {
-        current: 0,
-        max: 0
+        current: 5,
+        max: 6
       },
       stamina: {
-        current: 0,
-        max: 0
+        current: 9,
+        max: 10
       },
-      impact: 0,
-      damage: 0,
+      impact: 4,
+      damage: 5,
       health: {
-        current: 0,
-        max: 0
+        current: 14,
+        max: 15
       },
-      dodge: 0,
+      dodge: 2,
       coverage: {
-        current: 0,
-        max: 0
+        current: 5,
+        max: 6
       },
-      blunt: 0,
-      cut: 0,
-      penetrating: 0,
-      reach: 0
+      blunt: 2,
+      cut: 3,
+      penetrating: 5,
+      reach: 2
     },
-    equipment: { equipped: {}, carried: [] }
+    // XXX stub equipment until buying is implemented
+    equipment: {
+      equipped: {
+        hand1: {
+          type: "weapon",
+          weaponType: "sword",
+          name: "long sword",
+          id: "sw-1",
+          level: 1,
+          reach: 2,
+          structure: 3,
+          weight: 2
+        },
+        hand2: {
+          type: "shield",
+          name: "round shield",
+          id: "sh-1",
+          level: 1,
+          structure: 1,
+          weight: 1,
+          dodge: 0,
+          coverage: 1,
+          blunt: 0,
+          cut: 0,
+          penetrating: 2
+        },
+        body: {
+          type: "armor",
+          name: "chainmail",
+          id: "ch-1",
+          level: 1,
+          structure: 3,
+          weight: 11,
+          dodge: 2,
+          coverage: 5,
+          blunt: 2,
+          cut: 3,
+          penetrating: 3
+        }
+      },
+      carried: [
+        {
+          type: "weapon",
+          weaponType: "sword",
+          name: "dagger",
+          id: "dagger-1",
+          level: 1,
+          reach: 0,
+          structure: 3,
+          weight: 0.5
+        },
+        {
+          type: "weapon",
+          weaponType: "sword",
+          name: "long sword",
+          id: "sw-1",
+          level: 1,
+          reach: 2,
+          structure: 3,
+          weight: 2
+        },
+        {
+          type: "shield",
+          name: "round shield",
+          id: "sh-1",
+          level: 1,
+          structure: 1,
+          weight: 1,
+          dodge: 0,
+          coverage: 1,
+          blunt: 0,
+          cut: 0,
+          penetrating: 2
+        },
+        {
+          type: "armor",
+          name: "chainmail",
+          id: "ch-1",
+          level: 1,
+          structure: 3,
+          weight: 11,
+          dodge: 2,
+          coverage: 5,
+          blunt: 2,
+          cut: 3,
+          penetrating: 3
+        },
+        {
+          type: "misc",
+          id: "misc-1",
+          weight: 0,
+          level: 1,
+          name: "flask"
+        }
+      ]
+    }
   };
 }
 
