@@ -4,6 +4,7 @@ var debug = require("debug")("bs-tabletop-rpg-backend:routers:characters");
 const characterRepository = require("../repository/characterRepository");
 const {
   createCharacter,
+  updateCharacter,
   getCharacterById,
   listCharactersByUser
 } = require("../service/characterService")(characterRepository);
@@ -11,6 +12,7 @@ const {
 router.get("/", listCharacters);
 router.get("/:characterId", getCharacter);
 router.post("/", postCharacter);
+router.put("/:characterId", putCharacter);
 
 module.exports = router;
 
@@ -20,6 +22,17 @@ async function postCharacter(req, res, next) {
   try {
     var character = await createCharacter(req.body /*, req.user.sub*/);
     res.status(201).json(character);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function putCharacter(req, res, next) {
+  debug("putCharacter", req.body, req.headers);
+
+  try {
+    var character = await updateCharacter(req.body /*, req.user.sub*/);
+    res.status(200).json(character);
   } catch (err) {
     next(err);
   }

@@ -1,6 +1,9 @@
 const { BadRequestError } = require("../domain/error/BadRequestError");
+const log = require("bunyan").createLogger({ name: "bs-tabletop-rpg-backend" });
 
 function handleError(err) {
+  log.error(err);
+
   const status = errorStatus(err);
   const responseBody = errorResponseBody(err, status);
   return { status, responseBody };
@@ -9,6 +12,9 @@ function handleError(err) {
 function errorStatus(err) {
   if (err instanceof BadRequestError) {
     return 400;
+  }
+  if (err.status) {
+    return err.status;
   }
   return 500;
 }

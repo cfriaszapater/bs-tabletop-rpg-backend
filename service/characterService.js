@@ -5,7 +5,6 @@ const { emptyCharacter } = require("../domain/character");
 
 module.exports = characterRepository => ({
   createCharacter: async (character, userId) => {
-    debug("received character " + JSON.stringify(character));
     if (isEmptyObject(character)) {
       character = emptyCharacter();
     }
@@ -17,6 +16,10 @@ module.exports = characterRepository => ({
     return await characterRepository.save(character);
   },
 
+  updateCharacter: async (character, userId) => {
+    debug("updating character " + JSON.stringify(character));
+    return await characterRepository.save(character);
+  },
   getCharacterById: async (id, userId) => {
     return characterRepository.findById(id);
   },
