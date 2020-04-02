@@ -1,5 +1,9 @@
 FROM node:12.16-stretch
 
+# Avoid running as root user as a security measure
+RUN mkdir /app && chown -R node:node /app
+USER node
+
 # Create app directory
 WORKDIR /app
 
