@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  bs-tabletop-rpg-backend:
+    build: .
+    ports:
+      - 8080:8080
+  acceptance-tests:
+    build: ./acceptance-tests/
+    environment:
+      BASE_URL: bs-tabletop-rpg-backend:8080
+    depends_on:
+      - bs-tabletop-rpg-backend
