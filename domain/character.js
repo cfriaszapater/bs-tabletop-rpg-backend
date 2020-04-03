@@ -90,6 +90,9 @@ function sufferConsequences(character, attackResult) {
   };
 }
 
+// TODO calc characteristics if attributes changed, check values within thresholds (eg: cov not over max)
+function updateCharacter(previousCharacter, character) {}
+
 function emptyCharacter() {
   return {
     name: "The Nameless One",
@@ -117,6 +120,7 @@ function emptyCharacter() {
       },
       impact: 4,
       damage: 5,
+      damageType: "cut",
       health: {
         current: 14,
         max: 15
@@ -142,7 +146,9 @@ function emptyCharacter() {
           level: 1,
           reach: 2,
           structure: 3,
-          weight: 2
+          weight: 2,
+          damage: 5,
+          damageType: "cut"
         },
         hand2: {
           type: "shield",
@@ -241,5 +247,6 @@ module.exports = {
   resolveBlock,
   impactRunes,
   will,
-  emptyCharacter
+  emptyCharacter,
+  updateCharacter
 };

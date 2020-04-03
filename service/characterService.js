@@ -1,7 +1,7 @@
 const debug = require("debug")("bs-tabletop-rpg-backend:service:character");
 const uuidv4 = require("uuid/v4");
 const { isEmptyObject } = require("../util/isEmptyObject");
-const { emptyCharacter } = require("../domain/character");
+const { emptyCharacter, updateCharacter } = require("../domain/character");
 
 module.exports = characterRepository => ({
   createCharacter: async (character, userId) => {
@@ -19,9 +19,14 @@ module.exports = characterRepository => ({
   updateCharacter: async (character, userId) => {
     debug("updating character " + JSON.stringify(character));
 
-    // TODO calc characteristics
+    const previousCharacter = await characterRepository.findById(character.id);
 
-    return await characterRepository.save(character);
+    const updatedCharacter = await updateCharacter(
+      previousCharacter,
+      character
+    );
+
+    return await characterRepository.save(updatedCharacter);
   },
   getCharacterById: async (id, userId) => {
     return characterRepository.findById(id);

@@ -5,7 +5,8 @@ const {
   investStamina,
   sufferConsequences,
   resolveImpact,
-  impactRunes
+  impactRunes,
+  updateCharacter
 } = require("./character");
 const runes = require("./runes");
 jest.mock("./runes");
@@ -53,4 +54,17 @@ describe("Character", () => {
 
     expect(finalImpact).toBe(6);
   });
+
+  test.todo(
+    "should calc characteristics on update character with attributes change"
+  );
+  test.todo(
+    "should store characteristics on update character with legal characteristics change"
+  );
+  test.todo(
+    "should calc characteristics on update character on equipment change"
+  );
+  test.todo(
+    "should error on update character with illegal characteristics change"
+  );
 });
